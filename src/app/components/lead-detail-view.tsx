@@ -1,0 +1,466 @@
+"use client";
+
+import {  useEffect, useState } from "react";
+import { leadsApi } from "../utils/api-service";
+import { ArrowLeft, User, Mail, Phone, Building, MapPin, DollarSign, Calendar, Tag, FileText, Clock, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { useUser } from "../contexts/user-context";
+
+interface LeadDetailViewProps {
+  leadId: string;
+  onBack: () => void;
+}
+
+const statusOptions = [
+  { value: "new", label: "New", color: "bg-blue-100 text-blue-800" },
+  { value: "contacted", label: "Contacted", color: "bg-yellow-100 text-yellow-800" },
+  { value: "qualified", label: "Qualified", color: "bg-green-100 text-green-800" },
+  { value: "lost", label: "Lost", color: "bg-red-100 text-red-800" },
+  { value: "converted", label: "Converted", color: "bg-purple-100 text-purple-800" },
+];
+
+const priorityOptions = [
+  { value: "high", label: "High", color: "bg-red-100 text-red-800" },
+  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
+  { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
+];
+
+const sourceOptions = [
+  { value: "website", label: "Website" },
+  { value: "referral", label: "Referral" },
+  { value: "social_media", label: "Social Media" },
+  { value: "event", label: "Event" },
+  { value: "other", label: "Other" },
+];
+
+export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
+  const [leadData, setLeadData] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    leadsApi.getById(leadId).then(setLeadData);
+  }, [leadId]);
+
+  const handleSave = async () => {
+    await leadsApi.update(leadId, leadData);
+    setIsEditing(false);
+    setLeadData(await leadsApi.getById(leadId));
+  };
+
+  if (!leadData) return <div>Loading lead details...</div>;
+
+  const { currentUser, teamMembers, clusters } = useUser();
+  const currentStatus = statusOptions.find((s: { value: any; }) => s.value === leadData.status);
+  const currentPriority = priorityOptions.find((p: { value: any; }) => p.value === leadData.priority);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Leads
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1>{leadData.name}</h1>
+              <Badge variant="outline">{leadData.id}</Badge>
+              <Badge className={currentStatus?.color}>
+                {currentStatus?.label}
+              </Badge>
+              <Badge className={currentPriority?.color}>
+                {currentPriority?.label} Priority
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Created on {new Date(leadData.createdDate).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {!isEditing ? (
+            <>
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Lead
+              </Button>
+              <Button variant="outline" className="text-destructive">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content - Left 2/3 */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Contact Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lead-name">Full Name</Label>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    {isEditing ? (
+                      <Input
+                        id="lead-name"
+                        value={leadData.name}
+                        onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                      />
+                    ) : (
+                      <span>{leadData.name}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-email">Email</Label>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    {isEditing ? (
+                      <Input
+                        id="lead-email"
+                        type="email"
+                        value={leadData.email}
+                        onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
+                      />
+                    ) : (
+                      <span>{leadData.email}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-phone">Phone</Label>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    {isEditing ? (
+                      <Input
+                        id="lead-phone"
+                        value={leadData.phone}
+                        onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
+                      />
+                    ) : (
+                      <span>{leadData.phone}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-company">Company</Label>
+                  <div className="flex items-center gap-2">
+                    <Building className="w-4 h-4 text-muted-foreground" />
+                    {isEditing ? (
+                      <Input
+                        id="lead-company"
+                        value={leadData.company}
+                        onChange={(e) => setLeadData({ ...leadData, company: e.target.value })}
+                      />
+                    ) : (
+                      <span>{leadData.company}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Property Interest */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Property Interest</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Asset of Interest</Label>
+                  <div className="flex items-center gap-2">
+                    <Building className="w-4 h-4 text-muted-foreground" />
+                    <span>{leadData.assetInterest}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-6">ID: {leadData.assetId}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-budget">Budget</Label>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    {isEditing ? (
+                      <Input
+                        id="lead-budget"
+                        value={leadData.budget}
+                        onChange={(e) => setLeadData({ ...leadData, budget: e.target.value })}
+                      />
+                    ) : (
+                      <span className="text-accent font-semibold">{leadData.budget}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notes & Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Notes & Activity</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="lead-notes">Lead Notes</Label>
+                {isEditing ? (
+                  <Textarea
+                    id="lead-notes"
+                    rows={4}
+                    value={leadData.notes}
+                    onChange={(e) => setLeadData({ ...leadData, notes: e.target.value })}
+                  />
+                ) : (
+                  <p className="text-sm p-3 bg-muted/30 rounded-lg">{leadData.notes}</p>
+                )}
+              </div>
+
+              {/* Activity Timeline */}
+              <div className="space-y-3 mt-6">
+                <h4 className="font-semibold">Recent Activity</h4>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-2 h-2 rounded-full bg-accent mt-2" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Status updated to "Contacted"</p>
+                      <p className="text-xs text-muted-foreground">2 days ago • by {leadData.assignedAgent}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Initial contact made via email</p>
+                      <p className="text-xs text-muted-foreground">3 days ago • by {leadData.assignedAgent}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground mt-2" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Lead created</p>
+                      <p className="text-xs text-muted-foreground">5 days ago • by {leadData.assignedAgent}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar - Right 1/3 */}
+        <div className="space-y-6">
+          {/* Lead Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Lead Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="lead-status">Status</Label>
+                {isEditing ? (
+                  <Select
+                    value={leadData.status}
+                    onValueChange={(value) => setLeadData({ ...leadData, status: value })}
+                  >
+                    <SelectTrigger id="lead-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge className={currentStatus?.color + " w-full justify-center py-2"}>
+                    {currentStatus?.label}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lead-priority">Priority</Label>
+                {isEditing ? (
+                  <Select
+                    value={leadData.priority}
+                    onValueChange={(value) => setLeadData({ ...leadData, priority: value })}
+                  >
+                    <SelectTrigger id="lead-priority">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {priorityOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge className={currentPriority?.color + " w-full justify-center py-2"}>
+                    {currentPriority?.label} Priority
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lead-source">Source</Label>
+                {isEditing ? (
+                  <Select
+                    value={leadData.source}
+                    onValueChange={(value) => setLeadData({ ...leadData, source: value })}
+                  >
+                    <SelectTrigger id="lead-source">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sourceOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                    <Tag className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{sourceOptions.find((s: { value: any; }) => s.value === leadData.source)?.label}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Assignment */}
+          {currentUser.role === "team_lead" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Assignment</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="assigned-agent">Assigned Agent</Label>
+                  {isEditing ? (
+                    <Select value={leadData.assignedAgent}>
+                      <SelectTrigger id="assigned-agent">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={currentUser.name}>Myself</SelectItem>
+                        {teamMembers.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{leadData.assignedAgent}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Dates */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Important Dates</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Created Date</Label>
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{new Date(leadData.createdDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Last Contact</Label>
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{new Date(leadData.lastContact).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="next-followup">Next Follow-up</Label>
+                {isEditing ? (
+                  <Input
+                    id="next-followup"
+                    type="date"
+                    value={leadData.nextFollowUp}
+                    onChange={(e) => setLeadData({ ...leadData, nextFollowUp: e.target.value })}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 p-2 bg-accent/10 border border-accent/20 rounded">
+                    <Calendar className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-medium">{new Date(leadData.nextFollowUp).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="outline" className="w-full justify-start">
+                <Mail className="w-4 h-4 mr-2" />
+                Send Email
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Phone className="w-4 h-4 mr-2" />
+                Call Lead
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Calendar className="w-4 h-4 mr-2" />
+                Schedule Meeting
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <FileText className="w-4 h-4 mr-2" />
+                View Documents
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

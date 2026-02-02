@@ -1,0 +1,765 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { assetsApi } from "../utils/api-service";
+import { 
+  Search, Grid2x2, List, MapPin, DollarSign, Eye, Building2, 
+  Home, ShoppingBag, Warehouse, X, TrendingUp, Users, Bed, 
+  Bath, Car, Wifi, Zap, Droplet, ArrowLeft, ExternalLink, 
+  FileText, Image as ImageIcon, Video, BarChart3, AlertCircle,
+  CheckCircle2, Percent, Calendar, Shield, Sofa
+} from "lucide-react";
+
+// Map asset types to icon components
+const typeIcons: Record<string, React.ElementType> = {
+  commercial: Building2,
+  residential: Home,
+  retail: ShoppingBag,
+  industrial: Warehouse,
+};
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+
+// Map asset status to badge color classes
+const statusColors: Record<string, string> = {
+  available: "bg-green-100 text-green-800",
+  reserved: "bg-yellow-100 text-yellow-800",
+  sold: "bg-red-100 text-red-800",
+};
+
+// Map risk levels to badge color classes
+const riskColors: Record<string, string> = {
+  Low: "bg-green-100 text-green-800",
+  Medium: "bg-yellow-100 text-yellow-800",
+  High: "bg-red-100 text-red-800",
+  // Add more levels if needed
+};
+
+// Map project status to badge color classes
+const projectStatusColors: Record<string, string> = {
+  "Completed": "bg-green-100 text-green-800",
+  "In Progress": "bg-yellow-100 text-yellow-800",
+  "Delayed": "bg-red-100 text-red-800",
+  "Planned": "bg-blue-100 text-blue-800",
+  // Add more statuses as needed
+};
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+
+type Asset = {
+  id: string;
+  title: string;
+  type: string;
+  price: string;
+  priceRange: string;
+  commission: string;
+  commissionRate: string;
+  location: string;
+  status: string;
+  projectStatus: string;
+  area: string;
+  units: number;
+  bedrooms: string;
+  bathrooms: string;
+  parking: string;
+  furnished: string;
+  facilities: string[];
+  ownershipOptions: string[];
+  fractionCost: string;
+  fundingStatus: number;
+  rentalYield: string;
+  capitalAppreciation: string;
+  totalReturns: string;
+  riskLevel: string;
+  constructionStage: string;
+  images: number;
+  virtualTours: number;
+  documents: number;
+  description: string;
+  leads: any[];
+};
+
+export function AssetBrowser() {
+  const [assets, setAssets] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
+
+  useEffect(() => {
+    assetsApi.getAll().then(setAssets);
+  }, []);
+
+  const filteredAssets = assets.filter((asset) => {
+    const matchesSearch =
+      asset.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      asset.location?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === "all" || asset.type?.toLowerCase() === filterType.toLowerCase();
+    const matchesStatus = filterStatus === "all" || asset.status?.toLowerCase() === filterStatus.toLowerCase();
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  if (selectedAsset) {
+    const TypeIcon = typeIcons[selectedAsset.type] || Building2;
+    
+    return (
+      <div className="space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedAsset(null)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Browser
+          </Button>
+          <div className="flex-1">
+            <h1>{selectedAsset.title}</h1>
+            <p className="text-muted-foreground">{selectedAsset.id}</p>
+          </div>
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="investment">Investment</TabsTrigger>
+            <TabsTrigger value="returns">Returns & Risk</TabsTrigger>
+            <TabsTrigger value="media">Media</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Hero Image */}
+            <Card className="overflow-hidden">
+              <div className="h-80 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 flex items-center justify-center">
+                <div className="text-center">
+                  <TypeIcon className="w-24 h-24 text-primary mx-auto mb-4" />
+                  <p className="text-muted-foreground">Property Image Preview</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Asset Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Asset Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Asset Type</span>
+                    <Badge variant="outline" className="gap-2">
+                      <TypeIcon className="w-3 h-3" />
+                      {selectedAsset.type}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge className={statusColors[selectedAsset.status]}>
+                      {selectedAsset.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Project Status</span>
+                    <Badge className={projectStatusColors[selectedAsset.projectStatus]}>
+                      {selectedAsset.projectStatus}
+                    </Badge>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">Location</p>
+                        <p className="text-sm text-muted-foreground">{selectedAsset.location}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Physical Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Units</span>
+                    <span className="font-semibold">{selectedAsset.units}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Area</span>
+                    <span className="font-semibold">{selectedAsset.area}</span>
+                  </div>
+                  {selectedAsset.bedrooms !== "N/A" && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Bed className="w-4 h-4" />
+                        Bedrooms
+                      </div>
+                      <span className="font-semibold">{selectedAsset.bedrooms}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Bath className="w-4 h-4" />
+                      Bathrooms
+                    </div>
+                    <span className="font-semibold">{selectedAsset.bathrooms}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Car className="w-4 h-4" />
+                      Parking
+                    </div>
+                    <span className="font-semibold">{selectedAsset.parking}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Sofa className="w-4 h-4" />
+                      Furnishing
+                    </div>
+                    <span className="font-semibold">{selectedAsset.furnished}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Facilities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {(selectedAsset.facilities ?? []).map((facility, index) => (
+                      <Badge key={index} variant="secondary" className="gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {facility}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Description */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{selectedAsset.description}</p>
+              </CardContent>
+            </Card>
+
+            {/* Leads Section */}
+            {selectedAsset.leads && selectedAsset.leads.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Leads for this Asset</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {selectedAsset.leads.map((lead: any) => (
+                      <div
+                        key={lead.id}
+                        className="p-4 bg-muted/30 rounded-lg border border-border"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div>
+                            <p className="font-medium">{lead.name}</p>
+                            <p className="text-xs text-muted-foreground">{lead.email} &bull; {lead.phone}</p>
+                          </div>
+                          <Badge variant="outline">{lead.status}</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Budget: ₦{lead.budget?.toLocaleString() || "-"}
+                          </span>
+                          <span className="text-muted-foreground">
+                            Source: {lead.source || "-"}
+                          </span>
+                          <span className="text-muted-foreground">
+                            Location: {lead.location || "-"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Investment Tab */}
+          <TabsContent value="investment" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Investment Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Investment Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Ownership Options</p>
+                    <div className="space-y-2">
+                      {selectedAsset.ownershipOptions.map((option, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-accent" />
+                          <span className="text-sm">{option}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-1">Fraction Cost Range</p>
+                    <p className="text-xl font-semibold text-primary">{selectedAsset.fractionCost}</p>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-2">Funding Status</p>
+                    <div className="space-y-2">
+                      <Progress value={selectedAsset.fundingStatus} className="h-2" />
+                      <p className="text-sm font-semibold">{selectedAsset.fundingStatus}% Funded</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pricing */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pricing Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <p className="text-sm text-muted-foreground mb-1">Total Asset Value</p>
+                    <p className="text-2xl font-bold text-primary">{selectedAsset.price}</p>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-1">Price Range (Per Unit)</p>
+                    <p className="text-lg font-semibold">{selectedAsset.priceRange}</p>
+                  </div>
+                  <div className="pt-4 border-t bg-accent/5 p-4 rounded-lg border border-accent/20">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm text-muted-foreground">Your Commission</p>
+                      <Badge variant="outline">{selectedAsset.commissionRate}</Badge>
+                    </div>
+                    <p className="text-2xl font-bold text-accent">{selectedAsset.commission}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Returns & Risk Tab */}
+          <TabsContent value="returns" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Returns */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Investment Returns</CardTitle>
+                  <p className="text-sm text-muted-foreground">Projected annual returns</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-accent/10 rounded-lg border border-accent/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Percent className="w-5 h-5 text-accent" />
+                        <span className="text-sm font-medium">Rental Yield</span>
+                      </div>
+                      <span className="text-xl font-bold text-accent">{selectedAsset.rentalYield}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Annual rental income</p>
+                  </div>
+
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">Capital Appreciation</span>
+                      </div>
+                      <span className="text-xl font-bold text-primary">{selectedAsset.capitalAppreciation}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Property value growth</p>
+                  </div>
+
+                  <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">Total Returns</span>
+                      </div>
+                      <span className="text-xl font-bold text-primary">{selectedAsset.totalReturns}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Combined annual returns</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Risk Indicators */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Risk Assessment</CardTitle>
+                  <p className="text-sm text-muted-foreground">Investment risk factors</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-sm font-medium">Risk Level</span>
+                      </div>
+                      <Badge className={riskColors[selectedAsset.riskLevel]}>
+                        {selectedAsset.riskLevel}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Overall investment risk rating</p>
+                  </div>
+
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-sm font-medium">Construction Stage</span>
+                      </div>
+                      <span className="text-sm font-semibold">{selectedAsset.constructionStage}</span>
+                    </div>
+                    <Progress 
+                      value={parseInt(selectedAsset.constructionStage)} 
+                      className="h-2 mt-2" 
+                    />
+                  </div>
+
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium mb-1">Risk Factors</p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>• Construction timeline risk (if applicable)</li>
+                          <li>• Market volatility in property sector</li>
+                          <li>• Rental income may vary based on occupancy</li>
+                          <li>• Regulatory and economic factors</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Media Tab */}
+          <TabsContent value="media" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5" />
+                    Images
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <ImageIcon className="w-8 h-8 text-primary" />
+                    </div>
+                    <p className="text-2xl font-bold mb-1">{selectedAsset.images}</p>
+                    <p className="text-sm text-muted-foreground">Available Images</p>
+                    <Button variant="outline" size="sm" className="mt-4 gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      View Gallery
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Video className="w-5 h-5" />
+                    Virtual Tours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Video className="w-8 h-8 text-accent" />
+                    </div>
+                    <p className="text-2xl font-bold mb-1">{selectedAsset.virtualTours}</p>
+                    <p className="text-sm text-muted-foreground">3D Tours Available</p>
+                    <Button variant="outline" size="sm" className="mt-4 gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      Start Tour
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Documents
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-8 h-8 text-primary" />
+                    </div>
+                    <p className="text-2xl font-bold mb-1">{selectedAsset.documents}</p>
+                    <p className="text-sm text-muted-foreground">Legal Documents</p>
+                    <Button variant="outline" size="sm" className="mt-4 gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      View Documents
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Available Documents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {["Property Title", "Survey Plan", "Building Approval", "C of O", "Valuation Report", "Investment Prospectus", "Legal Due Diligence", "Construction Timeline"].map((doc, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-sm">{doc}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        View
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1>Asset Browser</h1>
+        <p className="text-muted-foreground">Browse available properties with detailed information</p>
+      </div>
+
+      {/* Filters and Search */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search assets by name or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="Asset Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="residential">Residential</SelectItem>
+                <SelectItem value="retail">Retail</SelectItem>
+                <SelectItem value="industrial">Industrial</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="reserved">Reserved</SelectItem>
+                <SelectItem value="sold">Sold</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode("grid")}
+              >
+                <Grid2x2 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredAssets.length} of {assets.length} assets
+        </p>
+      </div>
+
+      {/* Asset Display */}
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredAssets.map((asset) => {
+            const TypeIcon = typeIcons[asset.type] || Building2;
+            
+            return (
+              <Card 
+                key={asset.id} 
+                className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+                onClick={() => setSelectedAsset(asset)}
+              >
+                <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                  <div className="text-center">
+                    <TypeIcon className="w-12 h-12 text-primary mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">{asset.type}</p>
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <Badge className={statusColors[asset.status]}>
+                      {asset.status}
+                    </Badge>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">{asset.id}</p>
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">{asset.title}</h3>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {asset.location}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <Badge variant="outline" className={projectStatusColors[asset.projectStatus]}>
+                        {asset.projectStatus}
+                      </Badge>
+                      <span className="text-muted-foreground">{asset.units} units</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-border">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Price Range</span>
+                      <span className="font-semibold">{asset.priceRange}</span>
+                    </div>
+                    <div className="flex items-center justify-between bg-accent/10 p-3 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-accent" />
+                        <span className="text-sm text-muted-foreground">Commission</span>
+                      </div>
+                      <span className="font-semibold text-accent">{asset.commission}</span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4 gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedAsset(asset);
+                    }}
+                  >
+                    <Eye className="w-4 h-4" />
+                    View Details
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {filteredAssets.map((asset) => {
+                const TypeIcon = typeIcons[asset.type] || Building2;
+                
+                return (
+                  <div 
+                    key={asset.id} 
+                    className="p-6 hover:bg-muted/30 transition-colors cursor-pointer group"
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex gap-4 flex-1">
+                        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+                          <TypeIcon className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Badge variant="outline">{asset.id}</Badge>
+                            <h3 className="font-semibold group-hover:text-primary transition-colors">{asset.title}</h3>
+                            <Badge className={statusColors[asset.status]}>
+                              {asset.status}
+                            </Badge>
+                            <Badge variant="outline" className={projectStatusColors[asset.projectStatus]}>
+                              {asset.projectStatus}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                            <div className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {asset.location}
+                            </div>
+                            <span>{asset.type}</span>
+                            <span>{asset.units} units</span>
+                            <span>{asset.area}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs text-muted-foreground mb-1">Price Range</p>
+                        <p className="font-semibold text-lg mb-3">{asset.priceRange}</p>
+                        <div className="bg-accent/10 px-3 py-2 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Commission</p>
+                          <p className="text-sm font-semibold text-accent">{asset.commission}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

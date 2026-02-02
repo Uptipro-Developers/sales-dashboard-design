@@ -1,0 +1,193 @@
+"use client";
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { 
+  LayoutDashboard, 
+  Package, 
+  Users, 
+  TrendingUp, 
+  DollarSign, 
+  UserCog, 
+  Briefcase,
+  Receipt,
+  Settings,
+  HelpCircle
+} from "lucide-react";
+
+// Import components
+import { DashboardOverview } from "./components/dashboard-overview";
+import { AssetBrowser } from "./components/asset-browser";
+import { LeadManagement } from "./components/lead-management";
+import { DealProgress } from "./components/deal-progress";
+import { CommissionPreview } from "./components/commission-preview";
+import { AgentManagement } from "./components/agent-management";
+import { FreelancerManagement } from "./components/freelancer-management";
+import { ProfileSettings } from "./components/profile-settings";
+import { Performance } from "./components/performance";
+import { HelpSupport } from "./components/help-support";
+import { Login } from "./components/login";
+import { Signup, SignupData } from "./components/signup";
+import { Sidebar } from "./components/sidebar";
+import { TopBar } from "./components/top-bar";
+import { UserProvider, useUser, User, UserRole } from "./contexts/user-context";
+import { authApi, signupApi } from "./utils/api-service";
+
+type NavItem = "overview" | "assets" | "leads" | "deals" | "commission" | "agents" | "freelancers" | "profile" | "performance" | "help";
+
+export type NavGroup = {
+  id: string;
+  label: string;
+  items: {
+    id: NavItem;
+    label: string;
+    icon: any;
+    badge?: string;
+  }[];
+};
+
+function AppContent({ onLogout }: { onLogout: () => void }) {
+  const { currentUser } = useUser();
+
+  // Define navItems for the Sidebar
+  const navItems: NavGroup[] = [
+    {
+      id: "main",
+      label: "Main",
+      items: [
+        { id: "overview", label: "Overview", icon: LayoutDashboard },
+        { id: "assets", label: "Assets", icon: Package },
+        { id: "leads", label: "Leads", icon: Users },
+        { id: "deals", label: "Deals", icon: TrendingUp },
+        { id: "commission", label: "Commission", icon: DollarSign },
+      ],
+    },
+    {
+      id: "management",
+      label: "Management",
+      items: [
+        { id: "agents", label: "Agents", icon: UserCog },
+        { id: "freelancers", label: "Freelancers", icon: Briefcase },
+      ],
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      items: [
+        { id: "profile", label: "Profile", icon: Settings },
+        { id: "performance", label: "Performance", icon: Receipt },
+        { id: "help", label: "Help & Support", icon: HelpCircle },
+      ],
+    },
+  ];
+
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar navItems={navItems ?? []} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar onLogout={onLogout} />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Routes>
+            <Route path="/" element={<DashboardOverview />} />
+            <Route path="assets" element={<AssetBrowser />} />
+            <Route path="leads" element={<LeadManagement />} />
+            <Route path="deals" element={<DealProgress />} />
+            <Route path="commission" element={<CommissionPreview />} />
+            <Route path="agents" element={<AgentManagement />} />
+            <Route path="freelancers" element={<FreelancerManagement />} />
+            <Route path="profile" element={<ProfileSettings />} />
+            <Route path="performance" element={<Performance />} />
+            <Route path="help" element={<HelpSupport />} />
+            <Route path="*" element={<DashboardOverview />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function PrivateRoute({ children }: { children: JSX.Element }) {
+  const token = localStorage.getItem("access_token");
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  // Initialize from localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem("access_token");
+  });
+  const [authView, setAuthView] = useState<"login" | "signup">("login");
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const res = await authApi.login(email, password);
+      localStorage.setItem("access_token", res.access_token);
+      setIsAuthenticated(true);
+    } catch (err) {
+      // Show error to user
+    }
+  };
+
+  const handleSignup = async (userData: SignupData) => {
+    try {
+      await signupApi.register(userData);
+      setIsAuthenticated(true);
+    } catch (err) {
+      // Show error to user
+    }
+  };
+
+  // Show auth screens if not authenticated
+  if (!isAuthenticated) {
+    if (authView === "login") {
+      return (
+        <Login
+          onLogin={handleLogin}
+          onSwitchToSignup={() => setAuthView("signup")}
+        />
+      );
+    } else {
+      return (
+        <Signup
+          onSignup={handleSignup}
+          onSwitchToLogin={() => setAuthView("login")}
+        />
+      );
+    }
+  }
+
+  // Show main app if authenticated
+  return (
+    <Router>
+      <UserProvider>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <Login
+                onSwitchToSignup={() => setAuthView("signup")}
+              />
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <Signup
+                onSignup={handleSignup}
+                onSwitchToLogin={() => setAuthView("login")}
+              />
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              <PrivateRoute>
+                <AppContent onLogout={() => setIsAuthenticated(false)} />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </UserProvider>
+    </Router>
+  );
+}
