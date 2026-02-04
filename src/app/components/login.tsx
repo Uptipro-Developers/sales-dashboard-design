@@ -37,13 +37,14 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
     if (!validateForm()) return;
     setLoading(true);
     setErrors({});
+    const trimmedEmail = email.trim();
     try {
-      const res = await authApi.login(email, password);
+      const res = await authApi.login(trimmedEmail, password);
       // Save token (and optionally user info)
       localStorage.setItem("access_token", res.access_token);
       if (rememberMe) localStorage.setItem("remember_me", "true");
       // Optionally call parent onLogin
-      if (onLogin) onLogin(email, password);
+      if (onLogin) onLogin(trimmedEmail, password);
       // TODO: Redirect or update app state as needed
     } catch (err: any) {
       setErrors({ api: err?.response?.data?.message || "Login failed" });
@@ -78,7 +79,7 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder="Enter your email address"
                   className={cn("pl-10", errors.email && "border-red-500")}
                   value={email}
                   onChange={(e) => {
@@ -160,15 +161,7 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
               {loading ? "Signing In..." : "Sign In"}
             </Button>
 
-            {/* Demo Credentials */}
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-              <p className="text-xs font-medium text-foreground">Demo Credentials:</p>
-              <div className="space-y-1 text-xs text-muted-foreground">
-                <p><strong>Team Lead:</strong> lead@buyops.com / password123</p>
-                <p><strong>Sales Agent:</strong> agent@buyops.com / password123</p>
-                <p><strong>Freelancer:</strong> freelancer@buyops.com / password123</p>
-              </div>
-            </div>
+            {/* Demo credentials removed as per requirements */}
           </form>
         </Card>
 
