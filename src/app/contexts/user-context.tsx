@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { userApi, agentsApi, clustersApi, leadsApi } from "../utils/api-service";
 
-export type UserRole = "team_lead" | "sales_agent" | "freelancer";
+export type UserRole = "TEAM_LEAD" | "AGENT" | "FREELANCER";
 
 export interface Cluster {
   id: string;
@@ -21,7 +21,7 @@ export interface TeamMember {
   email: string;
   role: UserRole;
   clusterId: string;
-  creatorId?: string; // ID of the Agent/Team Lead who created this freelancer
+  creatorId?: string; // ID of the Agent/Team Lead who created this agent/freelancer
   commissionSharing?: CommissionSharing; // Only for freelancers
   performance: {
     leadsAssigned: number;
@@ -147,11 +147,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const getVisibleLeads = () => {
     if (!currentUser) return [];
-    if (currentUser.role === "team_lead") {
+    if (currentUser.role === "TEAM_LEAD") {
       return leads.filter((lead) => lead.clusterId === currentUser.clusterId);
-    } else if (currentUser.role === "sales_agent") {
+    } else if (currentUser.role === "AGENT") {
       const freelancerIds = teamMembers
-        .filter((member) => member.role === "freelancer" && member.creatorId === currentUser.id)
+        .filter((member) => member.role === "FREELANCER" && member.creatorId === currentUser.id)
         .map((member) => member.id);
       return leads.filter(
         (lead) =>
@@ -159,7 +159,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           lead.assignedTo === currentUser.id ||
           (lead.freelancerId && freelancerIds.includes(lead.freelancerId))
       );
-    } else if (currentUser.role === "freelancer") {
+    } else if (currentUser.role === "FREELANCER") {
       return leads.filter((lead) => lead.createdBy === currentUser.id);
     }
     return [];
