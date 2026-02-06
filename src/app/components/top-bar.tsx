@@ -27,15 +27,15 @@ export function TopBar({ onNavigate, activeView = "overview", onLogout }: TopBar
   const navigate = useNavigate();
 
   const roleLabels = {
-    team_lead: "Team Lead",
-    sales_agent: "Sales Agent",
-    freelancer: "Freelancer",
+    TEAM_LEAD: "Team Lead",
+    AGENT: "Agent",
+    FREELANCER: "Freelancer",
   };
 
   const roleColors = {
-    team_lead: "bg-primary/10 text-primary border-primary/20",
-    sales_agent: "bg-accent/10 text-accent border-accent/20",
-    freelancer: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+    TEAM_LEAD: "bg-primary/10 text-primary border-primary/20",
+    AGENT: "bg-accent/10 text-accent border-accent/20",
+    FREELANCER: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   };
 
   // Map pathnames to breadcrumb info
@@ -68,14 +68,14 @@ export function TopBar({ onNavigate, activeView = "overview", onLogout }: TopBar
           </Button>
         );
       case "/agents":
-        return currentUser.role === "team_lead" ? (
+        return currentUser.role === "TEAM_LEAD" ? (
           <Button size="sm" className="gap-2" onClick={() => {/* Agent creation handled in page */}}>
             <Plus className="w-4 h-4" />
             Add Agent
           </Button>
         ) : null;
       case "/freelancers":
-        return currentUser.role !== "freelancer" ? (
+        return currentUser.role !== "FREELANCER" ? (
           <Button size="sm" className="gap-2" onClick={() => {/* Freelancer creation handled in page */}}>
             <Plus className="w-4 h-4" />
             Add Freelancer
@@ -207,15 +207,15 @@ export function TopBar({ onNavigate, activeView = "overview", onLogout }: TopBar
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
               Switch Role (Demo)
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => switchRole("sales_agent")}>
+            <DropdownMenuItem onClick={() => switchRole("AGENT")}> 
               <User className="w-4 h-4 mr-2" />
-              Sales Agent View
+              Agent View
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => switchRole("team_lead")}>
+            <DropdownMenuItem onClick={() => switchRole("TEAM_LEAD")}> 
               <Users2 className="w-4 h-4 mr-2" />
               Team Lead View
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => switchRole("freelancer")}>
+            <DropdownMenuItem onClick={() => switchRole("FREELANCER")}> 
               <Briefcase className="w-4 h-4 mr-2" />
               Freelancer View
             </DropdownMenuItem> */}

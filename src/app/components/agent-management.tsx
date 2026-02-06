@@ -49,13 +49,13 @@ export function AgentManagement() {
   const [newAgentData, setNewAgentData] = useState({
     name: "",
     email: "",
-    role: "sales_agent",
+    role: "AGENT",
     clusterId: currentUser?.clusterId,
   });
   const [editAgentData, setEditAgentData] = useState({
     name: "",
     email: "",
-    role: "sales_agent",
+    role: "AGENT",
     clusterId: "",
   });
 

@@ -42,6 +42,7 @@ export function FreelancerManagement() {
     clusterId: "",
     freelancerPercentage: 70,
     creatorPercentage: 30,
+    role: "FREELANCER",
   });
 
   useEffect(() => {
@@ -68,13 +69,13 @@ export function FreelancerManagement() {
 
   // Get freelancers created by the current user
   const myFreelancers = freelancers.filter(
-    (m) => m.role === "AGENT" && m.creatorId === currentUser?.id
+    (m) => m.role === "FREELANCER" && m.creatorId === currentUser?.id
   );
 
-  // For Team Leads: get all freelancers in their cluster
+  // For Agents: get all freelancers in their cluster
   const clusterFreelancers = currentUser?.role === "AGENT"
     ? freelancers.filter(
-        (m) => m.role === "AGENT" && m.clusterId === currentUser.clusterId
+        (m) => m.role === "FREELANCER" && m.clusterId === currentUser.clusterId
       )
     : [];
 
