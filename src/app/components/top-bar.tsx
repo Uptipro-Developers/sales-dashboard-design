@@ -203,7 +203,7 @@ export function TopBar({ onNavigate, activeView = "overview", onLogout }: TopBar
             <DropdownMenuItem onClick={() => navigate("/help")}>
               Help & Support
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {/* <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
               Switch Role (Demo)
             </DropdownMenuLabel>
@@ -218,7 +218,7 @@ export function TopBar({ onNavigate, activeView = "overview", onLogout }: TopBar
             <DropdownMenuItem onClick={() => switchRole("freelancer")}>
               <Briefcase className="w-4 h-4 mr-2" />
               Freelancer View
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onLogout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
