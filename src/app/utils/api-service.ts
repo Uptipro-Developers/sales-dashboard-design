@@ -104,6 +104,9 @@ export const assetsApi = {
     (await api.post(`/assets/${id}/documents`, documentData)).data,
   deleteDocument: async (assetId: string, documentId: string) =>
     (await api.delete(`/assets/${assetId}/documents/${documentId}`)).data,
+  // Search assets by name or id (server-side filtering)
+  getBySearch: async (query: { name?: string; id?: string }) =>
+    (await api.get("/assets", { params: query })).data,
 };
 
 // TRANSACTIONS (Deals)
@@ -115,6 +118,9 @@ export const transactionsApi = {
   recordPayment: async (id: string, paymentData: any) =>
     (await api.post(`/transactions/${id}/payments`, paymentData)).data,
   getCommission: async (id: string) => (await api.get(`/transactions/${id}/commission`)).data,
+  // Search transactions by name or id (server-side filtering)
+  getBySearch: async (query: { name?: string; id?: string }) =>
+    (await api.get("/transactions", { params: query })).data,
   // Commissions for transactions (see below)
 };
 
