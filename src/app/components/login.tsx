@@ -7,10 +7,9 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { cn } from "./ui/utils";
-import { authApi } from "../utils/api-service"; // <-- Add this import
 
 interface LoginProps {
-  onLogin?: (email: string, password: string) => void;
+  onLogin?: (email: string, password: string) => Promise<void> | void;
   onSwitchToSignup: () => void;
 }
 
@@ -39,13 +38,10 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
     setErrors({});
     const trimmedEmail = email.trim();
     try {
-      const res = await authApi.login(trimmedEmail, password);
-      // Save token (and optionally user info)
-      localStorage.setItem("access_token", res.access_token);
       if (rememberMe) localStorage.setItem("remember_me", "true");
-      // Optionally call parent onLogin
-      if (onLogin) onLogin(trimmedEmail, password);
-      // TODO: Redirect or update app state as needed
+      if (onLogin) {
+        await onLogin(trimmedEmail, password);
+      }
     } catch (err: any) {
       setErrors({ api: err?.response?.data?.message || "Login failed" });
     } finally {

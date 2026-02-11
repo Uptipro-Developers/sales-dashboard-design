@@ -10,6 +10,11 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+const refreshClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "https://buyops-backend-production-9b5d.up.railway.app",
+  headers: { "Content-Type": "application/json" },
+});
+
 // Attach JWT token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
@@ -24,12 +29,18 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem("refresh_token");
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+        if (!refreshToken) {
+          throw new Error("Missing refresh token");
+        }
+        const response = await refreshClient.post(
+          "/auth/refresh",
           { refreshToken },
           {
             headers: {
@@ -42,6 +53,9 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return axios(originalRequest);
       } catch (refreshError) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("remember_me");
         return Promise.reject(refreshError);
       }
     }
@@ -67,7 +81,7 @@ export const authApi = {
 
 // SIGNUP (alias for register)
 export const signupApi = {
-  register: async (data: any) => (await api.post("/auth/signup", data)).data,
+  register: async (data: any) => (await api.post("/auth/register", data)).data,
 };
 
 // DASHBOARD

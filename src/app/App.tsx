@@ -122,19 +122,35 @@ export default function App() {
     try {
       const res = await authApi.login(email, password);
       localStorage.setItem("access_token", res.access_token);
+      if (res.refresh_token) {
+        localStorage.setItem("refresh_token", res.refresh_token);
+      }
       setIsAuthenticated(true);
     } catch (err) {
-      // Show error to user
+      throw err;
     }
   };
 
   const handleSignup = async (userData: SignupData) => {
     try {
-      await signupApi.register(userData);
+      const res = await signupApi.register(userData);
+      if (res?.access_token) {
+        localStorage.setItem("access_token", res.access_token);
+      }
+      if (res?.refresh_token) {
+        localStorage.setItem("refresh_token", res.refresh_token);
+      }
       setIsAuthenticated(true);
     } catch (err) {
-      // Show error to user
+      throw err;
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("remember_me");
+    setIsAuthenticated(false);
   };
 
   // Show auth screens if not authenticated
@@ -165,6 +181,7 @@ export default function App() {
             path="/login"
             element={
               <Login
+                onLogin={handleLogin}
                 onSwitchToSignup={() => setAuthView("signup")}
               />
             }
@@ -182,7 +199,7 @@ export default function App() {
             path="/*"
             element={
               <PrivateRoute>
-                <AppContent onLogout={() => setIsAuthenticated(false)} />
+                <AppContent onLogout={handleLogout} />
               </PrivateRoute>
             }
           />
