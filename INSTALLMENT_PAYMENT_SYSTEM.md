@@ -1,5 +1,6 @@
 # Installment Payment System Documentation
 
+
 ## Overview
 The BuyOps Sales Dashboard now supports broken/installment payments, allowing investors to pay for properties over time. Agent commissions are automatically distributed based on payment progress.
 
