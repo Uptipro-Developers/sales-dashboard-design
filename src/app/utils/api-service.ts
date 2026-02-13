@@ -6,12 +6,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://buyops-backend-production-9b5d.up.railway.app",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
   headers: { "Content-Type": "application/json" },
 });
 
 const refreshClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://buyops-backend-production-9b5d.up.railway.app",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
   headers: { "Content-Type": "application/json" },
 });
 
