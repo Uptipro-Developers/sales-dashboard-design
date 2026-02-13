@@ -79,7 +79,7 @@ export function AgentManagement() {
     setNewAgentData({
       name: "",
       email: "",
-      role: "sales_agent",
+      role: "AGENT",
       clusterId: currentUser?.clusterId,
     });
     setTeamMembers(await agentsApi.getAll());
@@ -116,11 +116,13 @@ export function AgentManagement() {
     setSelectedMemberId(null);
   };
 
-  const currentCluster = clusters.find(c => c.id === currentUser?.clusterId);
+  const currentCluster = clusters.find((c) => c.id === currentUser?.clusterId);
 
   // If viewing team member details
   if (selectedMemberId) {
-    return <TeamDetailView memberId={selectedMemberId} onBack={handleBackToList} />;
+    return (
+      <TeamDetailView memberId={selectedMemberId} onBack={handleBackToList} />
+    );
   }
 
   return (
@@ -129,10 +131,14 @@ export function AgentManagement() {
         <div>
           <h1>Agent Management</h1>
           <p className="text-muted-foreground">
-            Manage your team members and their roles • Default Cluster: {currentCluster?.name}
+            Manage your team members and their roles • Default Cluster:{" "}
+            {currentCluster?.name}
           </p>
         </div>
-        <Dialog open={isAddAgentModalOpen} onOpenChange={setIsAddAgentModalOpen}>
+        <Dialog
+          open={isAddAgentModalOpen}
+          onOpenChange={setIsAddAgentModalOpen}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -182,8 +188,8 @@ export function AgentManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sales_agent">Sales Agent</SelectItem>
-                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="AGENT">Sales Agent</SelectItem>
+                    <SelectItem value="TEAM_LEAD">Team Lead</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -202,7 +208,8 @@ export function AgentManagement() {
                     {clusters.map((cluster) => (
                       <SelectItem key={cluster.id} value={cluster.id}>
                         {cluster.name}
-                        {cluster.id === currentUser?.clusterId && " (Your Cluster)"}
+                        {cluster.id === currentUser?.clusterId &&
+                          " (Your Cluster)"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -210,8 +217,10 @@ export function AgentManagement() {
               </div>
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
                 <p className="text-muted-foreground">
-                  <strong>Note:</strong> The agent will receive an invitation email
-                  with login credentials and onboarding instructions. Default cluster is set to your cluster ({currentCluster?.name}).
+                  <strong>Note:</strong> The agent will receive an invitation
+                  email with login credentials and onboarding instructions.
+                  Default cluster is set to your cluster ({currentCluster?.name}
+                  ).
                 </p>
               </div>
               <div className="flex justify-end gap-2">
@@ -250,7 +259,9 @@ export function AgentManagement() {
                         variant="outline"
                         className="bg-accent/10 text-accent border-accent/20"
                       >
-                        {member.role === "sales_agent" ? "Sales Agent" : "Team Lead"}
+                        {member.role === "sales_agent"
+                          ? "Sales Agent"
+                          : "Team Lead"}
                       </Badge>
                       <Badge variant="outline">
                         {clusters.find((c) => c.id === member.clusterId)?.name}
@@ -263,7 +274,11 @@ export function AgentManagement() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => handleEditAgent(member)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditAgent(member)}
+                  >
                     <Edit className="w-4 h-4" />
                   </Button>
                   <AlertDialog>
@@ -276,8 +291,9 @@ export function AgentManagement() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remove Agent</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {member.name} from your team?
-                          This action cannot be undone and will deactivate their account.
+                          Are you sure you want to remove {member.name} from
+                          your team? This action cannot be undone and will
+                          deactivate their account.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -296,25 +312,29 @@ export function AgentManagement() {
 
               <div className="grid grid-cols-4 gap-4 mb-3">
                 <div className="p-3 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">Leads Assigned</p>
-                  <p className="text-xl font-semibold">
-                    {member.activeDeals}
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Leads Assigned
                   </p>
+                  <p className="text-xl font-semibold">{member.activeDeals}</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">In Progress</p>
-                  <p className="text-xl font-semibold">
-                    {member.activeDeals}
+                  <p className="text-xs text-muted-foreground mb-1">
+                    In Progress
                   </p>
+                  <p className="text-xl font-semibold">{member.activeDeals}</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">Completed</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Completed
+                  </p>
                   <p className="text-xl font-semibold text-accent">
                     {member.closedDeals}
                   </p>
                 </div>
                 <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
-                  <p className="text-xs text-muted-foreground mb-1">Total Commission</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Total Commission
+                  </p>
                   <p className="text-xl font-semibold text-accent">
                     ${member.totalCommission.toLocaleString()}
                   </p>
@@ -322,7 +342,11 @@ export function AgentManagement() {
               </div>
 
               <div className="flex justify-end">
-                <Button variant="outline" size="sm" onClick={() => handleViewDetails(member.id)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewDetails(member.id)}
+                >
                   <Eye className="w-4 h-4 mr-2" />
                   View Details
                 </Button>
@@ -333,7 +357,10 @@ export function AgentManagement() {
       </div>
 
       {/* Edit Agent Modal */}
-      <Dialog open={isEditAgentModalOpen} onOpenChange={setIsEditAgentModalOpen}>
+      <Dialog
+        open={isEditAgentModalOpen}
+        onOpenChange={setIsEditAgentModalOpen}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Agent</DialogTitle>
@@ -375,8 +402,8 @@ export function AgentManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sales_agent">Sales Agent</SelectItem>
-                  <SelectItem value="team_lead">Team Lead</SelectItem>
+                  <SelectItem value="AGENT">Sales Agent</SelectItem>
+                  <SelectItem value="TEAM_LEAD">Team Lead</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -410,9 +437,7 @@ export function AgentManagement() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSaveEdit}>
-                Save Changes
-              </Button>
+              <Button onClick={handleSaveEdit}>Save Changes</Button>
             </div>
           </div>
         </DialogContent>
@@ -428,15 +453,20 @@ export function AgentManagement() {
               <p className="text-2xl font-semibold">{teamMembers.length}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Total Deals Completed</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Total Deals Completed
+              </p>
               <p className="text-2xl font-semibold text-accent">
                 {teamMembers.reduce((sum, m) => sum + m.closedDeals, 0)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Total Team Commission</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Total Team Commission
+              </p>
               <p className="text-2xl font-semibold text-accent">
-                ${teamMembers
+                $
+                {teamMembers
                   .reduce((sum, m) => sum + m.totalCommission, 0)
                   .toLocaleString()}
               </p>
