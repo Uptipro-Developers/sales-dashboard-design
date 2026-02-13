@@ -1,53 +1,79 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Lock, Briefcase, Heart, Building2, MapPin, Phone, Mail, Calendar, UserCircle } from "lucide-react";
+import {
+  User,
+  Lock,
+  Briefcase,
+  Heart,
+  Building2,
+  MapPin,
+  Phone,
+  Mail,
+  Calendar,
+  UserCircle,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { userApi } from "../utils/api-service";
 
 export function ProfileSettings() {
   const [formData, setFormData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const mapUserToFormData = (user: any) => ({
+    id: user.id,
+    name: user.name || "",
+    email: user.email || "",
+    phone: user.phone || "",
+    role: user.role || "",
+    clusterName: user.agentProfile?.cluster?.name || "",
+    clusterId: user.agentProfile?.clusterId || "",
+    // Extended profile fields from backend
+    firstName: user.name?.split(" ")[0] || "",
+    lastName: user.name?.split(" ").slice(-1)[0] || "",
+    middleName:
+      user.name?.split(" ").length > 2
+        ? user.name?.split(" ").slice(1, -1).join(" ")
+        : "",
+    gender: user.gender || "",
+    dateOfBirth: user.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().split("T")[0]
+      : "",
+    phoneNumber: user.phone || "",
+    homeAddress: user.homeAddress || "",
+    nin: user.nin || "",
+    stateOfOrigin: user.stateOfOrigin || "",
+    reportsTo: "",
+    dateOfRecruitment: user.dateOfRecruitment
+      ? new Date(user.dateOfRecruitment).toISOString().split("T")[0]
+      : "",
+    kinFullName: user.kinFullName || "",
+    kinPhoneNumber: user.kinPhoneNumber || "",
+    kinRelationship: user.kinRelationship || "",
+    kinAddress: user.kinAddress || "",
+    bankName: user.bankName || "",
+    accountNumber: user.accountNumber || "",
+    beneficiaryName: user.beneficiaryName || "",
+    temporaryPassword: "",
+  });
+
   useEffect(() => {
     setLoading(true);
-    userApi.getCurrent()
+    userApi
+      .getCurrent()
       .then((user) => {
         // Flatten and map backend response to UI fields
-        setFormData({
-          id: user.id,
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          role: user.role || "",
-          clusterName: user.agentProfile?.cluster?.name || "",
-          clusterId: user.agentProfile?.clusterId || "",
-          // Add more fields as needed, using empty string as fallback
-          // The following are placeholders for extended profile fields
-          firstName: user.name?.split(" ")[0] || "",
-          lastName: user.name?.split(" ").slice(-1)[0] || "",
-          middleName: user.name?.split(" ").length > 2 ? user.name?.split(" ").slice(1, -1).join(" ") : "",
-          gender: "",
-          dateOfBirth: "",
-          phoneNumber: user.phone || "",
-          homeAddress: "",
-          nin: "",
-          stateOfOrigin: "",
-          reportsTo: "",
-          dateOfRecruitment: "",
-          kinFullName: "",
-          kinPhoneNumber: "",
-          kinRelationship: "",
-          kinAddress: "",
-          bankName: "",
-          accountNumber: "",
-          beneficiaryName: "",
-          temporaryPassword: "",
-        });
+        setFormData(mapUserToFormData(user));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -57,31 +83,103 @@ export function ProfileSettings() {
   };
 
   const handleSaveProfile = async () => {
-    // Only send updatable fields to backend
-    await userApi.update({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      // Add other fields if your backend supports them
-    });
-    // Optionally show a success message
+    // Combine first, middle, and last name into full name
+    const fullName = [
+      formData.firstName,
+      formData.middleName,
+      formData.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    // Send all updatable fields to backend
+    try {
+      const updatedUser = await userApi.update({
+        name: fullName || formData.name,
+        email: formData.email,
+        phone: formData.phoneNumber || formData.phone,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
+        homeAddress: formData.homeAddress,
+        nin: formData.nin,
+        stateOfOrigin: formData.stateOfOrigin,
+        dateOfRecruitment: formData.dateOfRecruitment,
+        kinFullName: formData.kinFullName,
+        kinPhoneNumber: formData.kinPhoneNumber,
+        kinRelationship: formData.kinRelationship,
+        kinAddress: formData.kinAddress,
+        bankName: formData.bankName,
+        accountNumber: formData.accountNumber,
+        beneficiaryName: formData.beneficiaryName,
+      });
+      setFormData(mapUserToFormData(updatedUser));
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update profile. Please try again.");
+    }
   };
 
   if (loading || !formData) return <div>Loading profile...</div>;
 
   // UI lists
   const nigerianStates = [
-    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
-    "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT", "Gombe",
-    "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara",
-    "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau",
-    "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+    "Abia",
+    "Adamawa",
+    "Akwa Ibom",
+    "Anambra",
+    "Bauchi",
+    "Bayelsa",
+    "Benue",
+    "Borno",
+    "Cross River",
+    "Delta",
+    "Ebonyi",
+    "Edo",
+    "Ekiti",
+    "Enugu",
+    "FCT",
+    "Gombe",
+    "Imo",
+    "Jigawa",
+    "Kaduna",
+    "Kano",
+    "Katsina",
+    "Kebbi",
+    "Kogi",
+    "Kwara",
+    "Lagos",
+    "Nasarawa",
+    "Niger",
+    "Ogun",
+    "Ondo",
+    "Osun",
+    "Oyo",
+    "Plateau",
+    "Rivers",
+    "Sokoto",
+    "Taraba",
+    "Yobe",
+    "Zamfara",
   ];
 
   const nigerianBanks = [
-    "Access Bank", "Zenith Bank", "GTBank", "First Bank of Nigeria", "UBA",
-    "Fidelity Bank", "Union Bank", "Sterling Bank", "Stanbic IBTC", "Polaris Bank",
-    "Wema Bank", "FCMB", "Heritage Bank", "Keystone Bank", "Ecobank", "Unity Bank"
+    "Access Bank",
+    "Zenith Bank",
+    "GTBank",
+    "First Bank of Nigeria",
+    "UBA",
+    "Fidelity Bank",
+    "Union Bank",
+    "Sterling Bank",
+    "Stanbic IBTC",
+    "Polaris Bank",
+    "Wema Bank",
+    "FCMB",
+    "Heritage Bank",
+    "Keystone Bank",
+    "Ecobank",
+    "Unity Bank",
   ];
 
   return (
@@ -111,7 +209,9 @@ export function ProfileSettings() {
                 <Input
                   id="firstName"
                   value={formData.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("firstName", e.target.value)
+                  }
                   placeholder="Enter first name"
                 />
               </div>
@@ -120,7 +220,9 @@ export function ProfileSettings() {
                 <Input
                   id="middleName"
                   value={formData.middleName}
-                  onChange={(e) => handleInputChange("middleName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("middleName", e.target.value)
+                  }
                   placeholder="Enter middle name"
                 />
               </div>
@@ -131,7 +233,9 @@ export function ProfileSettings() {
                 <Input
                   id="lastName"
                   value={formData.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lastName", e.target.value)
+                  }
                   placeholder="Enter last name"
                 />
               </div>
@@ -140,7 +244,10 @@ export function ProfileSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender</Label>
-                <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => handleInputChange("gender", value)}
+                >
                   <SelectTrigger id="gender">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
@@ -157,7 +264,9 @@ export function ProfileSettings() {
                   id="dateOfBirth"
                   type="date"
                   value={formData.dateOfBirth}
-                  onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("dateOfBirth", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -168,7 +277,9 @@ export function ProfileSettings() {
                 <Input
                   id="phoneNumber"
                   value={formData.phoneNumber}
-                  onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("phoneNumber", e.target.value)
+                  }
                   placeholder="+234 XXX XXX XXXX"
                 />
               </div>
@@ -191,7 +302,9 @@ export function ProfileSettings() {
               <Input
                 id="homeAddress"
                 value={formData.homeAddress}
-                onChange={(e) => handleInputChange("homeAddress", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("homeAddress", e.target.value)
+                }
                 placeholder="Enter full home address"
               />
             </div>
@@ -209,7 +322,9 @@ export function ProfileSettings() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nin">NIN (National Identification Number)</Label>
+                <Label htmlFor="nin">
+                  NIN (National Identification Number)
+                </Label>
                 <Input
                   id="nin"
                   value={formData.nin}
@@ -220,7 +335,12 @@ export function ProfileSettings() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stateOfOrigin">State of Origin</Label>
-                <Select value={formData.stateOfOrigin} onValueChange={(value) => handleInputChange("stateOfOrigin", value)}>
+                <Select
+                  value={formData.stateOfOrigin}
+                  onValueChange={(value) =>
+                    handleInputChange("stateOfOrigin", value)
+                  }
+                >
                   <SelectTrigger id="stateOfOrigin">
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
@@ -249,19 +369,11 @@ export function ProfileSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clusterName">Cluster</Label>
-                <Input
-                  id="clusterName"
-                  value={formData.clusterName}
-                  disabled
-                />
+                <Input id="clusterName" value={formData.clusterName} disabled />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Input
-                  id="role"
-                  value={formData.role}
-                  disabled
-                />
+                <Input id="role" value={formData.role} disabled />
               </div>
             </div>
             <div className="space-y-2">
@@ -270,16 +382,14 @@ export function ProfileSettings() {
                 id="dateOfRecruitment"
                 type="date"
                 value={formData.dateOfRecruitment}
-                onChange={(e) => handleInputChange("dateOfRecruitment", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("dateOfRecruitment", e.target.value)
+                }
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="employeeId">Employee ID</Label>
-              <Input
-                id="employeeId"
-                value={formData.id}
-                disabled
-              />
+              <Input id="employeeId" value={formData.id} disabled />
             </div>
           </CardContent>
         </Card>
@@ -298,7 +408,9 @@ export function ProfileSettings() {
               <Input
                 id="kinFullName"
                 value={formData.kinFullName}
-                onChange={(e) => handleInputChange("kinFullName", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("kinFullName", e.target.value)
+                }
                 placeholder="Enter next of kin's full name"
               />
             </div>
@@ -309,13 +421,20 @@ export function ProfileSettings() {
                 <Input
                   id="kinPhoneNumber"
                   value={formData.kinPhoneNumber}
-                  onChange={(e) => handleInputChange("kinPhoneNumber", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("kinPhoneNumber", e.target.value)
+                  }
                   placeholder="+234 XXX XXX XXXX"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="kinRelationship">Relationship</Label>
-                <Select value={formData.kinRelationship} onValueChange={(value) => handleInputChange("kinRelationship", value)}>
+                <Select
+                  value={formData.kinRelationship}
+                  onValueChange={(value) =>
+                    handleInputChange("kinRelationship", value)
+                  }
+                >
                   <SelectTrigger id="kinRelationship">
                     <SelectValue placeholder="Select relationship" />
                   </SelectTrigger>
@@ -335,7 +454,9 @@ export function ProfileSettings() {
               <Input
                 id="kinAddress"
                 value={formData.kinAddress}
-                onChange={(e) => handleInputChange("kinAddress", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("kinAddress", e.target.value)
+                }
                 placeholder="Enter next of kin's address"
               />
             </div>
@@ -353,18 +474,18 @@ export function ProfileSettings() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="bankName">Bank Name</Label>
-              <Select value={formData.bankName} onValueChange={(value) => handleInputChange("bankName", value)}>
-                <SelectTrigger id="bankName">
-                  <SelectValue placeholder="Select bank" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {nigerianBanks.map((bank) => (
-                    <SelectItem key={bank} value={bank}>
-                      {bank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="bankName"
+                list="bank-options"
+                value={formData.bankName}
+                onChange={(e) => handleInputChange("bankName", e.target.value)}
+                placeholder="Enter bank name"
+              />
+              <datalist id="bank-options">
+                {nigerianBanks.map((bank) => (
+                  <option key={bank} value={bank} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -373,7 +494,9 @@ export function ProfileSettings() {
                 <Input
                   id="accountNumber"
                   value={formData.accountNumber}
-                  onChange={(e) => handleInputChange("accountNumber", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("accountNumber", e.target.value)
+                  }
                   placeholder="Enter 10-digit account number"
                   maxLength={10}
                 />
@@ -383,7 +506,9 @@ export function ProfileSettings() {
                 <Input
                   id="beneficiaryName"
                   value={formData.beneficiaryName}
-                  onChange={(e) => handleInputChange("beneficiaryName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("beneficiaryName", e.target.value)
+                  }
                   placeholder="Enter account holder name"
                 />
               </div>
@@ -406,11 +531,14 @@ export function ProfileSettings() {
                 id="temporaryPassword"
                 type="password"
                 value={formData.temporaryPassword}
-                onChange={(e) => handleInputChange("temporaryPassword", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("temporaryPassword", e.target.value)
+                }
                 placeholder="Leave blank to auto-generate"
               />
               <p className="text-sm text-muted-foreground">
-                Leave this field blank to auto-generate a secure password. A new password will be sent to your email.
+                Leave this field blank to auto-generate a secure password. A new
+                password will be sent to your email.
               </p>
             </div>
           </CardContent>
@@ -419,9 +547,7 @@ export function ProfileSettings() {
         {/* Action Buttons */}
         <div className="flex justify-end gap-3">
           <Button variant="outline">Cancel</Button>
-          <Button onClick={handleSaveProfile}>
-            Save Profile Changes
-          </Button>
+          <Button onClick={handleSaveProfile}>Save Profile Changes</Button>
         </div>
       </div>
     </div>
