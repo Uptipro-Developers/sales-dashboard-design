@@ -129,13 +129,20 @@ export const transactionsApi = {
   getById: async (id: string) => (await api.get(`/transactions/${id}`)).data,
   create: async (data: any) => (await api.post("/transactions", data)).data,
   update: async (id: string, data: any) => (await api.put(`/transactions/${id}`, data)).data,
-  recordPayment: async (id: string, paymentData: any) =>
-    (await api.post(`/transactions/${id}/payments`, paymentData)).data,
-  getCommission: async (id: string) => (await api.get(`/transactions/${id}/commission`)).data,
-  // Search transactions by name or id (server-side filtering)
-  getBySearch: async (query: { name?: string; id?: string }) =>
-    (await api.get("/transactions", { params: query })).data,
-  // Commissions for transactions (see below)
+  getStats: async () => (await api.get("/transactions/stats")).data,
+  getUnpaidCommissions: async (month?: string) =>
+    (await api.get("/transactions/commissions/unpaid", { params: { month } })).data,
+  getPaidCommissions: async (month?: string) =>
+    (await api.get("/transactions/commissions/paid", { params: { month } })).data,
+  sendCommissions: async (transactionIds: string[]) =>
+    (await api.post("/transactions/commissions/send", { transactionIds })).data,
+  uploadPaymentProof: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return (await api.post("/transactions/commissions/payment-proof", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })).data;
+  },
 };
 
 // TRANSACTION COMMISSIONS (Paid/Unpaid)
@@ -155,11 +162,15 @@ export const transactionCommissionsApi = {
 
 // INSTALLMENTS
 export const installmentsApi = {
-  getAll: async () => (await api.get("/installments")).data,
-  getByTransaction: async (transactionId: string) =>
-    (await api.get(`/installments/transaction/${transactionId}`)).data,
-  recordPayment: async (id: string, amount: number) =>
-    (await api.post(`/installments/${id}/payment`, { amount })).data,
+  getAll: async (status?: string) => (await api.get("/installments", { params: { status } })).data,
+  getById: async (id: string) => (await api.get(`/installments/${id}`)).data,
+  getSchedule: async (id: string) => (await api.get(`/installments/${id}/schedule`)).data,
+  create: async (data: any) => (await api.post("/installments", data)).data,
+  recordPayment: async (planId: string, installmentId: string, data: { amount: number; paymentMethod: string }) =>
+    (await api.put(`/installments/${planId}/installments/${installmentId}/pay`, data)).data,
+  sendReminder: async (data: { installmentId: string; reminderDate: string; method: string }) =>
+    (await api.post("/installments/reminders/send", data)).data,
+  getStats: async () => (await api.get("/installments/stats")).data,
   getUpcoming: async () => (await api.get("/installments/upcoming")).data,
   getOverdue: async () => (await api.get("/installments/overdue")).data,
 };
@@ -180,21 +191,29 @@ export const leadsApi = {
 // AGENTS
 export const agentsApi = {
   getAll: async () => (await api.get("/agents")).data,
+  getById: async (id: string) => (await api.get(`/agents/${id}`)).data,
   create: async (data: any) => (await api.post("/agents", data)).data,
   update: async (id: string, data: any) => (await api.put(`/agents/${id}`, data)).data,
-  remove: async (id: string) => (await api.delete(`/agents/${id}`)).data,
+  delete: async (id: string) => (await api.delete(`/agents/${id}`)).data,
+  getPerformance: async (id: string) => (await api.get(`/agents/${id}/performance`)).data,
 };
 
 // FREELANCERS
 export const freelancersApi = {
   getAll: async () => (await api.get("/freelancers")).data,
+  getById: async (id: string) => (await api.get(`/freelancers/${id}`)).data,
   create: async (data: any) => (await api.post("/freelancers", data)).data,
-  remove: async (id: string) => (await api.delete(`/freelancers/${id}`)).data,
+  update: async (id: string, data: any) => (await api.put(`/freelancers/${id}`, data)).data,
+  delete: async (id: string) => (await api.delete(`/freelancers/${id}`)).data,
 };
 
 // CLUSTERS
 export const clustersApi = {
   getAll: async () => (await api.get("/clusters")).data,
+  getById: async (id: string) => (await api.get(`/clusters/${id}`)).data,
+  create: async (data: any) => (await api.post("/clusters", data)).data,
+  update: async (id: string, data: any) => (await api.put(`/clusters/${id}`, data)).data,
+  delete: async (id: string) => (await api.delete(`/clusters/${id}`)).data,
 };
 
 // SUPPORT
