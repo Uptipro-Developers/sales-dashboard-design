@@ -2,12 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { assetsApi } from "../utils/api-service";
-import { 
-  Search, Grid2x2, List, MapPin, DollarSign, Eye, Building2, 
-  Home, ShoppingBag, Warehouse, X, TrendingUp, Users, Bed, 
-  Bath, Car, Wifi, Zap, Droplet, ArrowLeft, ExternalLink, 
-  FileText, Image as ImageIcon, Video, BarChart3, AlertCircle,
-  CheckCircle2, Percent, Calendar, Shield, Sofa
+import {
+  Search,
+  Grid2x2,
+  List,
+  MapPin,
+  DollarSign,
+  Eye,
+  Building2,
+  Home,
+  ShoppingBag,
+  Warehouse,
+  X,
+  TrendingUp,
+  Users,
+  Bed,
+  Bath,
+  Car,
+  Wifi,
+  Zap,
+  Droplet,
+  ArrowLeft,
+  ExternalLink,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  BarChart3,
+  AlertCircle,
+  CheckCircle2,
+  Percent,
+  Calendar,
+  Shield,
+  Sofa,
 } from "lucide-react";
 
 // Map asset types to icon components
@@ -40,10 +66,10 @@ const riskColors: Record<string, string> = {
 
 // Map project status to badge color classes
 const projectStatusColors: Record<string, string> = {
-  "Completed": "bg-green-100 text-green-800",
+  Completed: "bg-green-100 text-green-800",
   "In Progress": "bg-yellow-100 text-yellow-800",
-  "Delayed": "bg-red-100 text-red-800",
-  "Planned": "bg-blue-100 text-blue-800",
+  Delayed: "bg-red-100 text-red-800",
+  Planned: "bg-blue-100 text-blue-800",
   // Add more statuses as needed
 };
 
@@ -103,16 +129,21 @@ export function AssetBrowser() {
 
   const filteredAssets = assets.filter((asset) => {
     const matchesSearch =
+      asset.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       asset.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       asset.location?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === "all" || asset.type?.toLowerCase() === filterType.toLowerCase();
-    const matchesStatus = filterStatus === "all" || asset.status?.toLowerCase() === filterStatus.toLowerCase();
+    const matchesType =
+      filterType === "all" ||
+      asset.type?.toLowerCase() === filterType.toLowerCase();
+    const matchesStatus =
+      filterStatus === "all" ||
+      asset.status?.toLowerCase() === filterStatus.toLowerCase();
     return matchesSearch && matchesType && matchesStatus;
   });
 
   if (selectedAsset) {
     const TypeIcon = typeIcons[selectedAsset.type] || Building2;
-    
+
     return (
       <div className="space-y-6">
         {/* Header with Back Button */}
@@ -127,7 +158,7 @@ export function AssetBrowser() {
             Back to Browser
           </Button>
           <div className="flex-1">
-            <h1>{selectedAsset.title}</h1>
+            <h1>{selectedAsset.title || selectedAsset.name}</h1>
             <p className="text-muted-foreground">{selectedAsset.id}</p>
           </div>
         </div>
@@ -147,7 +178,9 @@ export function AssetBrowser() {
               <div className="h-80 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 flex items-center justify-center">
                 <div className="text-center">
                   <TypeIcon className="w-24 h-24 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">Property Image Preview</p>
+                  <p className="text-muted-foreground">
+                    Property Image Preview
+                  </p>
                 </div>
               </div>
             </Card>
@@ -160,21 +193,31 @@ export function AssetBrowser() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Asset Type</span>
+                    <span className="text-sm text-muted-foreground">
+                      Asset Type
+                    </span>
                     <Badge variant="outline" className="gap-2">
                       <TypeIcon className="w-3 h-3" />
                       {selectedAsset.type}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
+                    <span className="text-sm text-muted-foreground">
+                      Status
+                    </span>
                     <Badge className={statusColors[selectedAsset.status]}>
                       {selectedAsset.status}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Project Status</span>
-                    <Badge className={projectStatusColors[selectedAsset.projectStatus]}>
+                    <span className="text-sm text-muted-foreground">
+                      Project Status
+                    </span>
+                    <Badge
+                      className={
+                        projectStatusColors[selectedAsset.projectStatus]
+                      }
+                    >
                       {selectedAsset.projectStatus}
                     </Badge>
                   </div>
@@ -183,7 +226,9 @@ export function AssetBrowser() {
                       <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
                       <div>
                         <p className="text-sm font-medium">Location</p>
-                        <p className="text-sm text-muted-foreground">{selectedAsset.location}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedAsset.location}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -196,11 +241,17 @@ export function AssetBrowser() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Units</span>
-                    <span className="font-semibold">{selectedAsset.units}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Units
+                    </span>
+                    <span className="font-semibold">
+                      {selectedAsset.units || selectedAsset.totalUnits || "—"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Area</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Area
+                    </span>
                     <span className="font-semibold">{selectedAsset.area}</span>
                   </div>
                   {selectedAsset.bedrooms !== "N/A" && (
@@ -209,7 +260,9 @@ export function AssetBrowser() {
                         <Bed className="w-4 h-4" />
                         Bedrooms
                       </div>
-                      <span className="font-semibold">{selectedAsset.bedrooms}</span>
+                      <span className="font-semibold">
+                        {selectedAsset.bedrooms}
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
@@ -217,21 +270,27 @@ export function AssetBrowser() {
                       <Bath className="w-4 h-4" />
                       Bathrooms
                     </div>
-                    <span className="font-semibold">{selectedAsset.bathrooms}</span>
+                    <span className="font-semibold">
+                      {selectedAsset.bathrooms}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Car className="w-4 h-4" />
                       Parking
                     </div>
-                    <span className="font-semibold">{selectedAsset.parking}</span>
+                    <span className="font-semibold">
+                      {selectedAsset.parking}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Sofa className="w-4 h-4" />
                       Furnishing
                     </div>
-                    <span className="font-semibold">{selectedAsset.furnished}</span>
+                    <span className="font-semibold">
+                      {selectedAsset.furnished}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -259,7 +318,9 @@ export function AssetBrowser() {
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{selectedAsset.description}</p>
+                <p className="text-muted-foreground">
+                  {selectedAsset.description}
+                </p>
               </CardContent>
             </Card>
 
@@ -279,7 +340,9 @@ export function AssetBrowser() {
                         <div className="flex items-center justify-between mb-1">
                           <div>
                             <p className="font-medium">{lead.name}</p>
-                            <p className="text-xs text-muted-foreground">{lead.email} &bull; {lead.phone}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {lead.email} &bull; {lead.phone}
+                            </p>
                           </div>
                           <Badge variant="outline">{lead.status}</Badge>
                         </div>
@@ -312,7 +375,9 @@ export function AssetBrowser() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Ownership Options</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Ownership Options
+                    </p>
                     <div className="space-y-2">
                       {selectedAsset.ownershipOptions.map((option, index) => (
                         <div key={index} className="flex items-center gap-2">
@@ -323,14 +388,25 @@ export function AssetBrowser() {
                     </div>
                   </div>
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-1">Fraction Cost Range</p>
-                    <p className="text-xl font-semibold text-primary">{selectedAsset.fractionCost}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Fraction Cost Range
+                    </p>
+                    <p className="text-xl font-semibold text-primary">
+                      {selectedAsset.fractionCost}
+                    </p>
                   </div>
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-2">Funding Status</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Funding Status
+                    </p>
                     <div className="space-y-2">
-                      <Progress value={selectedAsset.fundingStatus} className="h-2" />
-                      <p className="text-sm font-semibold">{selectedAsset.fundingStatus}% Funded</p>
+                      <Progress
+                        value={selectedAsset.fundingStatus}
+                        className="h-2"
+                      />
+                      <p className="text-sm font-semibold">
+                        {selectedAsset.fundingStatus}% Funded
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -343,19 +419,33 @@ export function AssetBrowser() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <p className="text-sm text-muted-foreground mb-1">Total Asset Value</p>
-                    <p className="text-2xl font-bold text-primary">{selectedAsset.price}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Total Asset Value
+                    </p>
+                    <p className="text-2xl font-bold text-primary">
+                      {selectedAsset.price}
+                    </p>
                   </div>
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-1">Price Range (Per Unit)</p>
-                    <p className="text-lg font-semibold">{selectedAsset.priceRange}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Price Range (Per Unit)
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {selectedAsset.priceRange}
+                    </p>
                   </div>
                   <div className="pt-4 border-t bg-accent/5 p-4 rounded-lg border border-accent/20">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm text-muted-foreground">Your Commission</p>
-                      <Badge variant="outline">{selectedAsset.commissionRate}</Badge>
+                      <p className="text-sm text-muted-foreground">
+                        Your Commission
+                      </p>
+                      <Badge variant="outline">
+                        {selectedAsset.commissionRate}
+                      </Badge>
                     </div>
-                    <p className="text-2xl font-bold text-accent">{selectedAsset.commission}</p>
+                    <p className="text-2xl font-bold text-accent">
+                      {selectedAsset.commission}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -369,40 +459,60 @@ export function AssetBrowser() {
               <Card>
                 <CardHeader>
                   <CardTitle>Investment Returns</CardTitle>
-                  <p className="text-sm text-muted-foreground">Projected annual returns</p>
+                  <p className="text-sm text-muted-foreground">
+                    Projected annual returns
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 bg-accent/10 rounded-lg border border-accent/30">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Percent className="w-5 h-5 text-accent" />
-                        <span className="text-sm font-medium">Rental Yield</span>
+                        <span className="text-sm font-medium">
+                          Rental Yield
+                        </span>
                       </div>
-                      <span className="text-xl font-bold text-accent">{selectedAsset.rentalYield}</span>
+                      <span className="text-xl font-bold text-accent">
+                        {selectedAsset.rentalYield}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Annual rental income</p>
+                    <p className="text-xs text-muted-foreground">
+                      Annual rental income
+                    </p>
                   </div>
 
                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">Capital Appreciation</span>
+                        <span className="text-sm font-medium">
+                          Capital Appreciation
+                        </span>
                       </div>
-                      <span className="text-xl font-bold text-primary">{selectedAsset.capitalAppreciation}</span>
+                      <span className="text-xl font-bold text-primary">
+                        {selectedAsset.capitalAppreciation}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Property value growth</p>
+                    <p className="text-xs text-muted-foreground">
+                      Property value growth
+                    </p>
                   </div>
 
                   <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/30">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <BarChart3 className="w-5 h-5 text-primary" />
-                        <span className="text-sm font-medium">Total Returns</span>
+                        <span className="text-sm font-medium">
+                          Total Returns
+                        </span>
                       </div>
-                      <span className="text-xl font-bold text-primary">{selectedAsset.totalReturns}</span>
+                      <span className="text-xl font-bold text-primary">
+                        {selectedAsset.totalReturns}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Combined annual returns</p>
+                    <p className="text-xs text-muted-foreground">
+                      Combined annual returns
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -411,7 +521,9 @@ export function AssetBrowser() {
               <Card>
                 <CardHeader>
                   <CardTitle>Risk Assessment</CardTitle>
-                  <p className="text-sm text-muted-foreground">Investment risk factors</p>
+                  <p className="text-sm text-muted-foreground">
+                    Investment risk factors
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 bg-card rounded-lg border border-border">
@@ -424,20 +536,26 @@ export function AssetBrowser() {
                         {selectedAsset.riskLevel}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">Overall investment risk rating</p>
+                    <p className="text-xs text-muted-foreground">
+                      Overall investment risk rating
+                    </p>
                   </div>
 
                   <div className="p-4 bg-card rounded-lg border border-border">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-muted-foreground" />
-                        <span className="text-sm font-medium">Construction Stage</span>
+                        <span className="text-sm font-medium">
+                          Construction Stage
+                        </span>
                       </div>
-                      <span className="text-sm font-semibold">{selectedAsset.constructionStage}</span>
+                      <span className="text-sm font-semibold">
+                        {selectedAsset.constructionStage}
+                      </span>
                     </div>
-                    <Progress 
-                      value={parseInt(selectedAsset.constructionStage)} 
-                      className="h-2 mt-2" 
+                    <Progress
+                      value={parseInt(selectedAsset.constructionStage)}
+                      className="h-2 mt-2"
                     />
                   </div>
 
@@ -475,8 +593,12 @@ export function AssetBrowser() {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                       <ImageIcon className="w-8 h-8 text-primary" />
                     </div>
-                    <p className="text-2xl font-bold mb-1">{selectedAsset.images}</p>
-                    <p className="text-sm text-muted-foreground">Available Images</p>
+                    <p className="text-2xl font-bold mb-1">
+                      {selectedAsset.images}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Available Images
+                    </p>
                     <Button variant="outline" size="sm" className="mt-4 gap-2">
                       <ExternalLink className="w-4 h-4" />
                       View Gallery
@@ -497,8 +619,12 @@ export function AssetBrowser() {
                     <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Video className="w-8 h-8 text-accent" />
                     </div>
-                    <p className="text-2xl font-bold mb-1">{selectedAsset.virtualTours}</p>
-                    <p className="text-sm text-muted-foreground">3D Tours Available</p>
+                    <p className="text-2xl font-bold mb-1">
+                      {selectedAsset.virtualTours}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      3D Tours Available
+                    </p>
                     <Button variant="outline" size="sm" className="mt-4 gap-2">
                       <ExternalLink className="w-4 h-4" />
                       Start Tour
@@ -519,8 +645,12 @@ export function AssetBrowser() {
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                       <FileText className="w-8 h-8 text-primary" />
                     </div>
-                    <p className="text-2xl font-bold mb-1">{selectedAsset.documents}</p>
-                    <p className="text-sm text-muted-foreground">Legal Documents</p>
+                    <p className="text-2xl font-bold mb-1">
+                      {selectedAsset.documents}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Legal Documents
+                    </p>
                     <Button variant="outline" size="sm" className="mt-4 gap-2">
                       <ExternalLink className="w-4 h-4" />
                       View Documents
@@ -536,7 +666,16 @@ export function AssetBrowser() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {["Property Title", "Survey Plan", "Building Approval", "C of O", "Valuation Report", "Investment Prospectus", "Legal Due Diligence", "Construction Timeline"].map((doc, index) => (
+                  {[
+                    "Property Title",
+                    "Survey Plan",
+                    "Building Approval",
+                    "C of O",
+                    "Valuation Report",
+                    "Investment Prospectus",
+                    "Legal Due Diligence",
+                    "Construction Timeline",
+                  ].map((doc, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
@@ -564,7 +703,9 @@ export function AssetBrowser() {
     <div className="space-y-6">
       <div>
         <h1>Asset Browser</h1>
-        <p className="text-muted-foreground">Browse available properties with detailed information</p>
+        <p className="text-muted-foreground">
+          Browse available properties with detailed information
+        </p>
       </div>
 
       {/* Filters and Search */}
@@ -635,17 +776,19 @@ export function AssetBrowser() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAssets.map((asset) => {
             const TypeIcon = typeIcons[asset.type] || Building2;
-            
+
             return (
-              <Card 
-                key={asset.id} 
+              <Card
+                key={asset.id}
                 className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
                 onClick={() => setSelectedAsset(asset)}
               >
                 <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
                   <div className="text-center">
                     <TypeIcon className="w-12 h-12 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">{asset.type}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {asset.type}
+                    </p>
                   </div>
                   <div className="absolute top-3 right-3">
                     <Badge className={statusColors[asset.status]}>
@@ -656,40 +799,67 @@ export function AssetBrowser() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <p className="text-xs text-muted-foreground mb-1">{asset.id}</p>
-                      <h3 className="font-semibold group-hover:text-primary transition-colors">{asset.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {asset.id}
+                      </p>
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">
+                        {asset.title || asset.name}
+                      </h3>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <MapPin className="w-4 h-4 mr-2" />
                       {asset.location}
                     </div>
                     <div className="flex items-center gap-4 text-sm">
-                      <Badge variant="outline" className={projectStatusColors[asset.projectStatus]}>
-                        {asset.projectStatus}
-                      </Badge>
-                      <span className="text-muted-foreground">{asset.units} units</span>
+                      {asset.projectStatus && (
+                        <Badge
+                          variant="outline"
+                          className={projectStatusColors[asset.projectStatus]}
+                        >
+                          {asset.projectStatus}
+                        </Badge>
+                      )}
+                      <span className="text-muted-foreground">
+                        {asset.units || asset.totalUnits || 0} units
+                      </span>
                     </div>
                   </div>
 
                   <div className="space-y-2 pt-4 border-t border-border">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Price Range</span>
-                      <span className="font-semibold">{asset.priceRange}</span>
+                      <span className="text-muted-foreground">Price</span>
+                      <span className="font-semibold">
+                        {asset.priceRange ||
+                          (asset.price
+                            ? `₦${parseFloat(asset.price).toLocaleString()}`
+                            : asset.fractionCost
+                              ? `₦${parseFloat(asset.fractionCost).toLocaleString()}`
+                              : "—")}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between bg-accent/10 p-3 rounded-lg">
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-accent" />
-                        <span className="text-sm text-muted-foreground">Commission</span>
+                        <span className="text-sm text-muted-foreground">
+                          Commission
+                        </span>
                       </div>
-                      <span className="font-semibold text-accent">{asset.commission}</span>
+                      <span className="font-semibold text-accent">
+                        {asset.commission ||
+                          (asset.leadCommission && asset.closerCommission
+                            ? `${asset.leadCommission}% + ${asset.closerCommission}%`
+                            : asset.commissionRate
+                              ? `${asset.commissionRate}%`
+                              : "—")}
+                      </span>
                     </div>
                   </div>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full mt-4 gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -710,10 +880,10 @@ export function AssetBrowser() {
             <div className="divide-y divide-border">
               {filteredAssets.map((asset) => {
                 const TypeIcon = typeIcons[asset.type] || Building2;
-                
+
                 return (
-                  <div 
-                    key={asset.id} 
+                  <div
+                    key={asset.id}
                     className="p-6 hover:bg-muted/30 transition-colors cursor-pointer group"
                     onClick={() => setSelectedAsset(asset)}
                   >
@@ -725,13 +895,22 @@ export function AssetBrowser() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <Badge variant="outline">{asset.id}</Badge>
-                            <h3 className="font-semibold group-hover:text-primary transition-colors">{asset.title}</h3>
+                            <h3 className="font-semibold group-hover:text-primary transition-colors">
+                              {asset.title || asset.name}
+                            </h3>
                             <Badge className={statusColors[asset.status]}>
                               {asset.status}
                             </Badge>
-                            <Badge variant="outline" className={projectStatusColors[asset.projectStatus]}>
-                              {asset.projectStatus}
-                            </Badge>
+                            {asset.projectStatus && (
+                              <Badge
+                                variant="outline"
+                                className={
+                                  projectStatusColors[asset.projectStatus]
+                                }
+                              >
+                                {asset.projectStatus}
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             <div className="flex items-center">
@@ -739,17 +918,37 @@ export function AssetBrowser() {
                               {asset.location}
                             </div>
                             <span>{asset.type}</span>
-                            <span>{asset.units} units</span>
-                            <span>{asset.area}</span>
+                            <span>
+                              {asset.units || asset.totalUnits || 0} units
+                            </span>
+                            {asset.area && <span>{asset.area}</span>}
                           </div>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs text-muted-foreground mb-1">Price Range</p>
-                        <p className="font-semibold text-lg mb-3">{asset.priceRange}</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Price
+                        </p>
+                        <p className="font-semibold text-lg mb-3">
+                          {asset.priceRange ||
+                            (asset.price
+                              ? `₦${parseFloat(asset.price).toLocaleString()}`
+                              : asset.fractionCost
+                                ? `₦${parseFloat(asset.fractionCost).toLocaleString()}`
+                                : "—")}
+                        </p>
                         <div className="bg-accent/10 px-3 py-2 rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">Commission</p>
-                          <p className="text-sm font-semibold text-accent">{asset.commission}</p>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Commission
+                          </p>
+                          <p className="text-sm font-semibold text-accent">
+                            {asset.commission ||
+                              (asset.leadCommission && asset.closerCommission
+                                ? `${asset.leadCommission}% + ${asset.closerCommission}%`
+                                : asset.commissionRate
+                                  ? `${asset.commissionRate}%`
+                                  : "—")}
+                          </p>
                         </div>
                       </div>
                     </div>
