@@ -259,9 +259,13 @@ export function AgentManagement() {
                         variant="outline"
                         className="bg-accent/10 text-accent border-accent/20"
                       >
-                        {member.role === "sales_agent"
-                          ? "Sales Agent"
-                          : "Team Lead"}
+                        {member.user?.role === "TEAM_LEAD"
+                          ? "Team Lead"
+                          : member.user?.role === "AGENT"
+                            ? "Sales Agent"
+                            : member.role === "TEAM_LEAD"
+                              ? "Team Lead"
+                              : "Sales Agent"}
                       </Badge>
                       <Badge variant="outline">
                         {clusters.find((c) => c.id === member.clusterId)?.name}

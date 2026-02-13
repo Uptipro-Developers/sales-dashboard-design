@@ -73,7 +73,7 @@ export function LeadManagement() {
   });
   useEffect(() => {
     setLoading(true);
-    Promise.all([leadsApi.getAll(), assetsApi.getAll({ status: "published" })])
+    Promise.all([leadsApi.getAll(), assetsApi.getAll()])
       .then(([leadsData, assetsData]) => {
         setLeads(leadsData);
         setAvailableAssets(assetsData);

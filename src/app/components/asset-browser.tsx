@@ -580,33 +580,39 @@ export function AssetBrowser() {
 
           {/* Media Tab */}
           <TabsContent value="media" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {selectedAsset.images?.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <ImageIcon className="w-5 h-5" />
-                    Images
+                    Images ({selectedAsset.images.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <ImageIcon className="w-8 h-8 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold mb-1">
-                      {selectedAsset.images}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Available Images
-                    </p>
-                    <Button variant="outline" size="sm" className="mt-4 gap-2">
-                      <ExternalLink className="w-4 h-4" />
-                      View Gallery
-                    </Button>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedAsset.images.map((img: any) => (
+                      <div
+                        key={img.id}
+                        className="relative aspect-square rounded overflow-hidden border hover:border-primary transition-colors group cursor-pointer"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.caption || "Property image"}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        {img.caption && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 truncate">
+                            {img.caption}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
+            )}
 
+            {selectedAsset.virtualTours && selectedAsset.virtualTours > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -622,77 +628,67 @@ export function AssetBrowser() {
                     <p className="text-2xl font-bold mb-1">
                       {selectedAsset.virtualTours}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-4">
                       3D Tours Available
                     </p>
-                    <Button variant="outline" size="sm" className="mt-4 gap-2">
+                    <Button variant="outline" size="sm" className="gap-2">
                       <ExternalLink className="w-4 h-4" />
                       Start Tour
                     </Button>
                   </div>
                 </CardContent>
               </Card>
+            )}
 
+            {selectedAsset.documents?.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <FileText className="w-5 h-5" />
-                    Documents
+                    Documents ({selectedAsset.documents.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FileText className="w-8 h-8 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold mb-1">
-                      {selectedAsset.documents}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Legal Documents
-                    </p>
-                    <Button variant="outline" size="sm" className="mt-4 gap-2">
-                      <ExternalLink className="w-4 h-4" />
-                      View Documents
-                    </Button>
+                  <div className="space-y-2">
+                    {selectedAsset.documents.map((doc: any) => (
+                      <a
+                        key={doc.id}
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-muted rounded hover:bg-muted/80 transition-colors group"
+                      >
+                        <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {doc.title || "Document"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {doc.type}
+                          </p>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
+                      </a>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Documents</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {[
-                    "Property Title",
-                    "Survey Plan",
-                    "Building Approval",
-                    "C of O",
-                    "Valuation Report",
-                    "Investment Prospectus",
-                    "Legal Due Diligence",
-                    "Construction Timeline",
-                  ].map((doc, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-muted-foreground" />
-                        <span className="text-sm">{doc}</span>
-                      </div>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <ExternalLink className="w-4 h-4" />
-                        View
-                      </Button>
+            {!selectedAsset.images?.length &&
+              !selectedAsset.documents?.length &&
+              !selectedAsset.virtualTours && (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-8 h-8 text-muted-foreground" />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <p className="text-muted-foreground">
+                      No media available for this asset
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
           </TabsContent>
         </Tabs>
       </div>
