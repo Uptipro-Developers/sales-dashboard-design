@@ -137,7 +137,7 @@ export function LeadManagement() {
     return <LeadDetailView leadId={selectedLeadId} onBack={handleBackToList} />;
 
   // Filtering logic
-  const visibleLeads = leads;
+  const visibleLeads = leads ?? [];
   const getFilteredLeads = () => {
     if (!currentUser) return visibleLeads;
     if (currentUser.role === "team_lead") {
@@ -164,7 +164,7 @@ export function LeadManagement() {
           return visibleLeads;
       }
     } else if (currentUser.role === "sales_agent") {
-      const freelancerIds = teamMembers
+      const freelancerIds = (teamMembers ?? [])
         .filter(
           (member) =>
             member.role === "freelancer" && member.creatorId === currentUser.id,
@@ -418,16 +418,16 @@ export function LeadManagement() {
       {/* Tabs for filtering leads */}
       <Card>
         <CardContent className="p-0">
-          <div className="flex border-b border-border">
+          <div className="flex overflow-x-auto border-b border-border scrollbar-hide">
             <button
               onClick={() => setActiveTab("all")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "all"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
                 <span>All Leads</span>
                 <Badge variant="outline" className="bg-muted">
                   {visibleLeads.length}
@@ -436,14 +436,15 @@ export function LeadManagement() {
             </button>
             <button
               onClick={() => setActiveTab("personal")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "personal"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
-                <span>My Personal Leads</span>
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
+                <span className="hidden sm:inline">My Personal Leads</span>
+                <span className="sm:hidden">Personal</span>
                 <Badge
                   variant="outline"
                   className="bg-green-500/10 text-green-500"
@@ -454,13 +455,13 @@ export function LeadManagement() {
             </button>
             <button
               onClick={() => setActiveTab("admin_pool")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "admin_pool"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
                 <span>Admin Pool</span>
                 <Badge
                   variant="outline"
@@ -472,14 +473,15 @@ export function LeadManagement() {
             </button>
             <button
               onClick={() => setActiveTab("team_pipeline")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "team_pipeline"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
-                <span>Team Pipeline</span>
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
+                <span className="hidden sm:inline">Team Pipeline</span>
+                <span className="sm:hidden">Team</span>
                 <Badge
                   variant="outline"
                   className="bg-blue-500/10 text-blue-500"
@@ -490,14 +492,15 @@ export function LeadManagement() {
             </button>
             <button
               onClick={() => setActiveTab("assigned")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "assigned"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
-                <span>Assigned to Me</span>
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
+                <span className="hidden sm:inline">Assigned to Me</span>
+                <span className="sm:hidden">Assigned</span>
                 <Badge variant="outline" className="bg-primary/10 text-primary">
                   {assignedCount}
                 </Badge>
@@ -505,14 +508,15 @@ export function LeadManagement() {
             </button>
             <button
               onClick={() => setActiveTab("freelancer")}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium transition-colors ${
                 activeTab === "freelancer"
                   ? "text-primary border-b-2 border-primary bg-primary/5"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
-              <div className="flex items-center justify-center gap-2">
-                <span>Freelancer Leads</span>
+              <div className="flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
+                <span className="hidden sm:inline">Freelancer Leads</span>
+                <span className="sm:hidden">Freelancer</span>
                 <Badge
                   variant="outline"
                   className="bg-orange-500/10 text-orange-500"
@@ -708,7 +712,7 @@ export function LeadManagement() {
                       <SelectValue placeholder="Choose an agent" />
                     </SelectTrigger>
                     <SelectContent>
-                      {teamMembers.map((member) => (
+                      {(teamMembers ?? []).map((member) => (
                         <SelectItem key={member.id} value={member.id}>
                           {member.name} • {member.performance.leadsAssigned}{" "}
                           leads • {member.performance.dealsInProgress} active
