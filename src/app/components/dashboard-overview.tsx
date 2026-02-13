@@ -29,22 +29,15 @@ export function DashboardOverview() {
   // API state
   const [funnelData, setFunnelData] = useState<any[]>([]);
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
+  const [performanceData, setPerformanceData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Team Lead Personal Sales Stats (replace with API if available)
-  const teamLeadPersonalStats = {
-    personalLeads: 8,
-    personalDealsCompleted: 5,
-    personalDealsInProgress: 3,
-    personalCommission: 18750,
-  };
-
-  // Team-wide stats for Team Leads (replace with API if available)
+  // Team-wide stats for Team Leads
   const teamStats = {
-    totalLeads: teamMembers.reduce((sum, m) => sum + m.performance.leadsAssigned, 0),
-    totalDealsCompleted: teamMembers.reduce((sum, m) => sum + m.performance.dealsCompleted, 0),
-    totalDealsInProgress: teamMembers.reduce((sum, m) => sum + m.performance.dealsInProgress, 0),
-    totalCommission: teamMembers.reduce((sum, m) => sum + m.performance.totalCommission, 0),
+    totalLeads: teamMembers.reduce((sum, m) => sum + (m.performance?.leadsAssigned || 0), 0),
+    totalDealsCompleted: teamMembers.reduce((sum, m) => sum + (m.performance?.dealsCompleted || 0), 0),
+    totalDealsInProgress: teamMembers.reduce((sum, m) => sum + (m.performance?.dealsInProgress || 0), 0),
+    totalCommission: teamMembers.reduce((sum, m) => sum + (m.performance?.totalCommission || 0), 0),
   };
 
   useEffect(() => {
@@ -54,8 +47,9 @@ export function DashboardOverview() {
       leadsApi.getAll({ sort: "recent", limit: 5 }),
     ])
       .then(([performance, leads]) => {
+        setPerformanceData(performance);
         setFunnelData(
-          (performance.conversionMetrics || []).map((item, idx) => ({
+          (performance.conversionMetrics || []).map((item: any, idx: number) => ({
             stage: item.stage,
             count: item.count,
             color: ["#6366f1", "#f59e42", "#fbbf24", "#10b981", "#ef4444"][idx % 5],
@@ -91,9 +85,9 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">My Active Leads</p>
-                    <p className="text-3xl font-semibold">{teamLeadPersonalStats.personalLeads}</p>
+                    <p className="text-sm text-muted-foregrperformanceData?.personalLeads || 0}</p>
                     <p className="text-sm text-accent mt-2">
+                      Personal pipelinetext-sm text-accent mt-2">
                       +3 this week
                     </p>
                   </div>
@@ -108,7 +102,7 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">My Deals Completed</p>
+                    <p className="text-sm text-muted-foreground mb-1">MperformanceData?.personalDealsCompleted || 0
                     <p className="text-3xl font-semibold text-accent">{teamLeadPersonalStats.personalDealsCompleted}</p>
                     <p className="text-sm text-muted-foreground mt-2">
                       This month
@@ -125,7 +119,7 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">My Deals in Progress</p>
+                    <p className="text-sm text-muted-foreground mb-1">MyperformanceData?.personalDealsInProgress || 0
                     <p className="text-3xl font-semibold text-warning">{teamLeadPersonalStats.personalDealsInProgress}</p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Active pipeline
@@ -144,7 +138,7 @@ export function DashboardOverview() {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">My Sales Commission</p>
                     <p className="text-3xl font-semibold text-accent">
-                      ₦{teamLeadPersonalStats.personalCommission.toLocaleString()}
+                      ₦{(performanceData?.personalCommission || 0).toLocaleString()}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Personal earnings

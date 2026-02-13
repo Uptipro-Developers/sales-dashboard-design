@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { leadsApi } from "../utils/api-service";
+import { leadsApi, assetsApi } from "../utils/api-service";
 import { Plus, Eye, Mail, Phone, Calendar, UserPlus, X } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
@@ -51,6 +51,7 @@ const sourceColors: Record<string, string> = {
 export function LeadManagement() {
   const { currentUser, teamMembers } = useUser();
   const [leads, setLeads] = useState<any[]>([]);
+  const [availableAssets, setAvailableAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -70,20 +71,13 @@ export function LeadManagement() {
     followUpDate: "",
     assignTo: "",
   });
-
-  // Replace with API call for available assets if needed
-  const availableAssets = [
-    { id: "A-2845", name: "Downtown Commercial Plaza" },
-    { id: "A-2846", name: "West Side Residential Complex" },
-    { id: "A-2847", name: "Tech Park Office Building" },
-    { id: "A-2848", name: "Main Street Retail Space" },
-    { id: "A-2849", name: "Suburban Office Park" },
-    { id: "A-2850", name: "Luxury Condo Tower" },
-  ];
-
   useEffect(() => {
     setLoading(true);
-    leadsApi.getAll()
+    Promise.all([leadsApi.getAll(), assetsApi.getAll({ status: "Available" })])
+      .then(([leadsData, assetsData]) => {
+        setLeads(leadsData);
+        setAvailableAssets(assetsData);
+      })
       .then(setLeads)
       .finally(() => setLoading(false));
   }, []);
@@ -118,7 +112,7 @@ export function LeadManagement() {
   const handleRemoveAsset = (assetId: string) => {
     setNewLeadData({
       ...newLeadData,
-      assetInterests: newLeadData.assetInterests.filter(id => id !== assetId),
+      assetInterests: newLeadData.assetInterests.filter((id) => id !== assetId),
     });
   };
 
@@ -139,7 +133,8 @@ export function LeadManagement() {
   const handleBackToList = () => setSelectedLeadId(null);
 
   if (loading) return <div>Loading leads...</div>;
-  if (selectedLeadId) return <LeadDetailView leadId={selectedLeadId} onBack={handleBackToList} />;
+  if (selectedLeadId)
+    return <LeadDetailView leadId={selectedLeadId} onBack={handleBackToList} />;
 
   // Filtering logic
   const visibleLeads = leads;
@@ -148,35 +143,48 @@ export function LeadManagement() {
     if (currentUser.role === "team_lead") {
       switch (activeTab) {
         case "personal":
-          return visibleLeads.filter(lead => lead.createdBy?.id === currentUser.id);
+          return visibleLeads.filter(
+            (lead) => lead.createdBy?.id === currentUser.id,
+          );
         case "admin_pool":
-          return visibleLeads.filter(lead => lead.source === "admin");
+          return visibleLeads.filter((lead) => lead.source === "admin");
         case "team_pipeline":
           return visibleLeads.filter(
-            lead => lead.createdBy?.id !== currentUser.id && lead.source !== "admin"
+            (lead) =>
+              lead.createdBy?.id !== currentUser.id && lead.source !== "admin",
           );
         case "assigned":
-          return visibleLeads.filter(lead => lead.assignedTo?.id === currentUser.id);
+          return visibleLeads.filter(
+            (lead) => lead.assignedTo?.id === currentUser.id,
+          );
         case "freelancer":
-          return visibleLeads.filter(lead => lead.freelancerId);
+          return visibleLeads.filter((lead) => lead.freelancerId);
         case "all":
         default:
           return visibleLeads;
       }
     } else if (currentUser.role === "sales_agent") {
       const freelancerIds = teamMembers
-        .filter((member) => member.role === "freelancer" && member.creatorId === currentUser.id)
+        .filter(
+          (member) =>
+            member.role === "freelancer" && member.creatorId === currentUser.id,
+        )
         .map((member) => member.id);
       switch (activeTab) {
         case "personal":
-          return visibleLeads.filter(lead => lead.createdBy?.id === currentUser.id);
+          return visibleLeads.filter(
+            (lead) => lead.createdBy?.id === currentUser.id,
+          );
         case "assigned":
           return visibleLeads.filter(
-            lead => lead.assignedTo?.id === currentUser.id && lead.createdBy?.id !== currentUser.id
+            (lead) =>
+              lead.assignedTo?.id === currentUser.id &&
+              lead.createdBy?.id !== currentUser.id,
           );
         case "freelancer":
           return visibleLeads.filter(
-            lead => lead.freelancerId && freelancerIds.includes(lead.freelancerId)
+            (lead) =>
+              lead.freelancerId && freelancerIds.includes(lead.freelancerId),
           );
         case "all":
         default:
@@ -189,13 +197,21 @@ export function LeadManagement() {
   const filteredLeads = getFilteredLeads();
 
   // Tab counts
-  const personalCount = visibleLeads.filter(lead => lead.createdBy?.id === currentUser?.id).length;
-  const adminPoolCount = visibleLeads.filter(lead => lead.source === "admin").length;
-  const teamPipelineCount = visibleLeads.filter(
-    lead => lead.createdBy?.id !== currentUser?.id && lead.source !== "admin"
+  const personalCount = visibleLeads.filter(
+    (lead) => lead.createdBy?.id === currentUser?.id,
   ).length;
-  const assignedCount = visibleLeads.filter(lead => lead.assignedTo?.id === currentUser?.id).length;
-  const freelancerCount = visibleLeads.filter(lead => lead.freelancerId).length;
+  const adminPoolCount = visibleLeads.filter(
+    (lead) => lead.source === "admin",
+  ).length;
+  const teamPipelineCount = visibleLeads.filter(
+    (lead) => lead.createdBy?.id !== currentUser?.id && lead.source !== "admin",
+  ).length;
+  const assignedCount = visibleLeads.filter(
+    (lead) => lead.assignedTo?.id === currentUser?.id,
+  ).length;
+  const freelancerCount = visibleLeads.filter(
+    (lead) => lead.freelancerId,
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -244,7 +260,10 @@ export function LeadManagement() {
                       placeholder="john@email.com"
                       value={newLeadData.email}
                       onChange={(e) =>
-                        setNewLeadData({ ...newLeadData, email: e.target.value })
+                        setNewLeadData({
+                          ...newLeadData,
+                          email: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -257,7 +276,10 @@ export function LeadManagement() {
                       placeholder="+1 (555) 123-4567"
                       value={newLeadData.phone}
                       onChange={(e) =>
-                        setNewLeadData({ ...newLeadData, phone: e.target.value })
+                        setNewLeadData({
+                          ...newLeadData,
+                          phone: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -283,7 +305,9 @@ export function LeadManagement() {
                 </div>
                 {currentUser?.role === "team_lead" && (
                   <div className="space-y-2">
-                    <Label htmlFor="assign-agent">Assign to Agent (Optional)</Label>
+                    <Label htmlFor="assign-agent">
+                      Assign to Agent (Optional)
+                    </Label>
                     <Select
                       value={newLeadData.assignTo}
                       onValueChange={(value) =>
@@ -311,19 +335,30 @@ export function LeadManagement() {
                       <SelectValue placeholder="Select assets to add" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableAssets.filter(asset => !newLeadData.assetInterests.includes(asset.id)).map(asset => (
-                        <SelectItem key={asset.id} value={asset.id}>
-                          {asset.id} - {asset.name}
-                        </SelectItem>
-                      ))}
+                      {availableAssets
+                        .filter(
+                          (asset) =>
+                            !newLeadData.assetInterests.includes(asset.id),
+                        )
+                        .map((asset) => (
+                          <SelectItem key={asset.id} value={asset.id}>
+                            {asset.id} - {asset.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   {newLeadData.assetInterests.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {newLeadData.assetInterests.map(assetId => {
-                        const asset = availableAssets.find(a => a.id === assetId);
+                      {newLeadData.assetInterests.map((assetId) => {
+                        const asset = availableAssets.find(
+                          (a) => a.id === assetId,
+                        );
                         return (
-                          <Badge key={assetId} variant="outline" className="bg-primary/10 text-primary">
+                          <Badge
+                            key={assetId}
+                            variant="outline"
+                            className="bg-primary/10 text-primary"
+                          >
                             {assetId} - {asset?.name}
                             <Button
                               variant="ghost"
@@ -346,7 +381,10 @@ export function LeadManagement() {
                     type="date"
                     value={newLeadData.followUpDate}
                     onChange={(e) =>
-                      setNewLeadData({ ...newLeadData, followUpDate: e.target.value })
+                      setNewLeadData({
+                        ...newLeadData,
+                        followUpDate: e.target.value,
+                      })
                     }
                   />
                 </div>
@@ -363,7 +401,10 @@ export function LeadManagement() {
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreateModalOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleCreateLead}>Create Lead</Button>
@@ -403,7 +444,10 @@ export function LeadManagement() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span>My Personal Leads</span>
-                <Badge variant="outline" className="bg-green-500/10 text-green-500">
+                <Badge
+                  variant="outline"
+                  className="bg-green-500/10 text-green-500"
+                >
                   {personalCount}
                 </Badge>
               </div>
@@ -418,7 +462,10 @@ export function LeadManagement() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span>Admin Pool</span>
-                <Badge variant="outline" className="bg-purple-500/10 text-purple-500">
+                <Badge
+                  variant="outline"
+                  className="bg-purple-500/10 text-purple-500"
+                >
                   {adminPoolCount}
                 </Badge>
               </div>
@@ -433,7 +480,10 @@ export function LeadManagement() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span>Team Pipeline</span>
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-500">
+                <Badge
+                  variant="outline"
+                  className="bg-blue-500/10 text-blue-500"
+                >
                   {teamPipelineCount}
                 </Badge>
               </div>
@@ -463,7 +513,10 @@ export function LeadManagement() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span>Freelancer Leads</span>
-                <Badge variant="outline" className="bg-orange-500/10 text-orange-500">
+                <Badge
+                  variant="outline"
+                  className="bg-orange-500/10 text-orange-500"
+                >
                   {freelancerCount}
                 </Badge>
               </div>
@@ -485,11 +538,17 @@ export function LeadManagement() {
                     <Badge className={statusColors[lead.status]}>
                       {statusLabels[lead.status]}
                     </Badge>
-                    <Badge className={sourceColors[lead.source]} variant="outline">
+                    <Badge
+                      className={sourceColors[lead.source]}
+                      variant="outline"
+                    >
                       {lead.source}
                     </Badge>
                     {lead.freelancerName && (
-                      <Badge variant="outline" className="bg-orange-500/10 text-orange-500">
+                      <Badge
+                        variant="outline"
+                        className="bg-orange-500/10 text-orange-500"
+                      >
                         via {lead.freelancerName}
                       </Badge>
                     )}
@@ -509,7 +568,9 @@ export function LeadManagement() {
                     </div>
                   </div>
                   {lead.company && (
-                    <p className="text-sm text-muted-foreground mt-2">{lead.company}</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {lead.company}
+                    </p>
                   )}
                 </div>
                 {currentUser?.role === "team_lead" && !lead.assignedTo && (
@@ -530,13 +591,17 @@ export function LeadManagement() {
               <div className="bg-muted/30 p-4 rounded-lg mb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Linked Assets</p>
+                    <p className="text-sm text-muted-foreground">
+                      Linked Assets
+                    </p>
                     {lead.asset?.name && (
                       <p className="font-medium">{lead.asset.name}</p>
                     )}
                     {lead.asset?.id && (
                       <div className="flex gap-2 mt-1">
-                        <p className="text-sm text-muted-foreground">{lead.asset.id}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {lead.asset.id}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -555,15 +620,22 @@ export function LeadManagement() {
                 )}
                 <div className="flex items-center gap-2 ml-auto">
                   {currentUser?.role === "team_lead" && lead.assignedToName && (
-                    <Badge variant="outline" className="bg-blue-500/10 text-blue-500">
+                    <Badge
+                      variant="outline"
+                      className="bg-blue-500/10 text-blue-500"
+                    >
                       Assigned to: {lead.assignedToName}
                     </Badge>
                   )}
-                  {lead.createdByName && lead.createdByName !== currentUser?.name && (
-                    <Badge variant="outline" className="bg-green-500/10 text-green-500">
-                      Created by: {lead.createdByName}
-                    </Badge>
-                  )}
+                  {lead.createdByName &&
+                    lead.createdByName !== currentUser?.name && (
+                      <Badge
+                        variant="outline"
+                        className="bg-green-500/10 text-green-500"
+                      >
+                        Created by: {lead.createdByName}
+                      </Badge>
+                    )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -575,7 +647,9 @@ export function LeadManagement() {
                   {currentUser?.role === "sales_agent" && (
                     <Select
                       value={lead.status}
-                      onValueChange={(value) => handleStatusChange(lead.id, value)}
+                      onValueChange={(value) =>
+                        handleStatusChange(lead.id, value)
+                      }
                     >
                       <SelectTrigger className="w-48">
                         <SelectValue />
@@ -589,7 +663,10 @@ export function LeadManagement() {
                     </Select>
                   )}
                   {currentUser?.role === "team_lead" && (
-                    <Badge variant="outline" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/10 text-primary"
+                    >
                       {statusLabels[lead.status]}
                     </Badge>
                   )}
@@ -614,19 +691,27 @@ export function LeadManagement() {
               <div className="space-y-4">
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <p className="font-medium">{selectedLead.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedLead.asset}</p>
-                  <p className="text-sm text-accent font-semibold">{selectedLead.value}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedLead.asset}
+                  </p>
+                  <p className="text-sm text-accent font-semibold">
+                    {selectedLead.value}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="agent-select">Select Agent</Label>
-                  <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+                  <Select
+                    value={selectedAgent}
+                    onValueChange={setSelectedAgent}
+                  >
                     <SelectTrigger id="agent-select">
                       <SelectValue placeholder="Choose an agent" />
                     </SelectTrigger>
                     <SelectContent>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.id} value={member.id}>
-                          {member.name} • {member.performance.leadsAssigned} leads • {member.performance.dealsInProgress} active
+                          {member.name} • {member.performance.leadsAssigned}{" "}
+                          leads • {member.performance.dealsInProgress} active
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -644,7 +729,10 @@ export function LeadManagement() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={() => selectedLead && handleAssignLead(selectedLead.id, selectedAgent)}
+                    onClick={() =>
+                      selectedLead &&
+                      handleAssignLead(selectedLead.id, selectedAgent)
+                    }
                     disabled={!selectedAgent}
                   >
                     Assign Lead

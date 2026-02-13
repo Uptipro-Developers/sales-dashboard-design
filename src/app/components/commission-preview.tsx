@@ -1,11 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { reportsApi, transactionCommissionsApi, userApi, teamApi } from "../utils/api-service";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@radix-ui/react-dialog";
-import { Award, Badge, DollarSign, TrendingUp, Clock, Users, BarChart, PieChart, Users2, CreditCard, CircleCheck, Calendar } from "lucide-react";
-import { ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Pie, Cell } from "recharts";
-import { calculateEarnedCommission, formatNaira } from "../utils/payment-calculations";
+import {
+  reportsApi,
+  transactionCommissionsApi,
+  userApi,
+  teamApi,
+} from "../utils/api-service";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@radix-ui/react-dialog";
+import {
+  Award,
+  Badge,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Users,
+  BarChart,
+  PieChart,
+  Users2,
+  CreditCard,
+  CircleCheck,
+  Calendar,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Bar,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  calculateEarnedCommission,
+  formatNaira,
+} from "../utils/payment-calculations";
 import { InstallmentCommissionTracker } from "./installment-commission-tracker";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -68,7 +104,7 @@ export function CommissionPreview() {
   // Calculate Team Lead Bonus (5% of total team commission)
   const totalTeamCommission = teamMembers.reduce(
     (sum, m) => sum + (m.performance?.totalCommission || 0),
-    0
+    0,
   );
   const teamLeadBonus = Math.round(totalTeamCommission * 0.05);
 
@@ -78,13 +114,20 @@ export function CommissionPreview() {
     : null;
 
   // Calculate freelancer commission sharing (if applicable)
-  const freelancerCommissionData = currentUser.role === "freelancer" && currentUser.commissionSharing
-    ? {
-        totalCommission: currentUser.performance.totalCommission,
-        freelancerShare: Math.round(currentUser.performance.totalCommission * (currentUser.commissionSharing.freelancerPercentage / 100)),
-        creatorShare: Math.round(currentUser.performance.totalCommission * (currentUser.commissionSharing.creatorPercentage / 100)),
-      }
-    : null;
+  const freelancerCommissionData =
+    currentUser.role === "freelancer" && currentUser.commissionSharing
+      ? {
+          totalCommission: currentUser.performance.totalCommission,
+          freelancerShare: Math.round(
+            currentUser.performance.totalCommission *
+              (currentUser.commissionSharing.freelancerPercentage / 100),
+          ),
+          creatorShare: Math.round(
+            currentUser.performance.totalCommission *
+              (currentUser.commissionSharing.creatorPercentage / 100),
+          ),
+        }
+      : null;
 
   if (loading) return <div>Loading commissions...</div>;
 
@@ -110,16 +153,22 @@ export function CommissionPreview() {
                     <Award className="w-7 h-7 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Team Lead Bonus (5% of Team Commission)</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Team Lead Bonus (5% of Team Commission)
+                    </p>
                     <p className="text-3xl font-semibold text-primary">
                       ₦{teamLeadBonus.toLocaleString()}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      From ₦{totalTeamCommission.toLocaleString()} total team commission
+                      From ₦{totalTeamCommission.toLocaleString()} total team
+                      commission
                     </p>
                   </div>
                 </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-lg px-4 py-2">
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary border-primary/30 text-lg px-4 py-2"
+                >
                   <Award className="w-4 h-4 mr-2" />
                   Leadership Bonus
                 </Badge>
@@ -136,19 +185,28 @@ export function CommissionPreview() {
                     <DollarSign className="w-7 h-7 text-accent" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">My Personal Sales Commission</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      My Personal Sales Commission
+                    </p>
                     <p className="text-3xl font-semibold text-accent">
-                      ₦18,750
+                      {commissionSummary.thisMonth}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      From my direct sales (5 deals closed)
+                      From my direct sales
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Total Earnings</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Earnings
+                  </p>
                   <p className="text-2xl font-semibold text-accent">
-                    ₦{(18750 + teamLeadBonus).toLocaleString()}
+                    ₦
+                    {(
+                      parseFloat(
+                        commissionSummary.thisMonth.replace(/[₦,]/g, "") || "0",
+                      ) + teamLeadBonus
+                    ).toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Personal + Team Bonus
@@ -167,10 +225,16 @@ export function CommissionPreview() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  {currentUser.role === "team_lead" ? "Team - This Month" : "This Month"}
+                  {currentUser.role === "team_lead"
+                    ? "Team - This Month"
+                    : "This Month"}
                 </p>
-                <p className="text-3xl font-semibold text-accent">{commissionSummary.thisMonth}</p>
-                <p className="text-sm text-muted-foreground mt-2">+32% from last month</p>
+                <p className="text-3xl font-semibold text-accent">
+                  {commissionSummary.thisMonth}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  +32% from last month
+                </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-accent" />
@@ -184,10 +248,16 @@ export function CommissionPreview() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  {currentUser.role === "team_lead" ? "Team - Total Earned" : "Total Earned"}
+                  {currentUser.role === "team_lead"
+                    ? "Team - Total Earned"
+                    : "Total Earned"}
                 </p>
-                <p className="text-3xl font-semibold">{commissionSummary.totalEarned}</p>
-                <p className="text-sm text-muted-foreground mt-2">Lifetime earnings</p>
+                <p className="text-3xl font-semibold">
+                  {commissionSummary.totalEarned}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Lifetime earnings
+                </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-primary" />
@@ -201,8 +271,12 @@ export function CommissionPreview() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Pending</p>
-                <p className="text-3xl font-semibold text-warning">{commissionSummary.pending}</p>
-                <p className="text-sm text-muted-foreground mt-2">From active deals</p>
+                <p className="text-3xl font-semibold text-warning">
+                  {commissionSummary.pending}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  From active deals
+                </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center">
                 <Clock className="w-6 h-6 text-warning" />
@@ -216,13 +290,19 @@ export function CommissionPreview() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  {currentUser.role === "team_lead" ? "Your Bonus Rate" : "Conversion Rate"}
+                  {currentUser.role === "team_lead"
+                    ? "Your Bonus Rate"
+                    : "Conversion Rate"}
                 </p>
                 <p className="text-3xl font-semibold">
-                  {currentUser.role === "team_lead" ? "5%" : commissionSummary.conversionRate}
+                  {currentUser.role === "team_lead"
+                    ? "5%"
+                    : commissionSummary.conversionRate}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {currentUser.role === "team_lead" ? "Of team earnings" : "Leads to deals"}
+                  {currentUser.role === "team_lead"
+                    ? "Of team earnings"
+                    : "Leads to deals"}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -238,41 +318,63 @@ export function CommissionPreview() {
       </div>
 
       {/* Freelancer Commission Sharing Banner */}
-      {currentUser.role === "freelancer" && freelancerCommissionData && creatorInfo && (
-        <Card className="bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20">
-          <CardContent className="p-6">
-            <div className="mb-4">
-              <h4 className="font-semibold text-lg mb-1">Commission Sharing Agreement</h4>
-              <p className="text-sm text-muted-foreground">
-                Partnership with {creatorInfo.name} ({creatorInfo.role === "team_lead" ? "Team Lead" : "Sales Agent"})
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                <p className="text-sm text-muted-foreground mb-1">Your Share ({currentUser.commissionSharing?.freelancerPercentage}%)</p>
-                <p className="text-3xl font-semibold text-orange-500">
-                  ₦{freelancerCommissionData.freelancerShare.toLocaleString()}
+      {currentUser.role === "freelancer" &&
+        freelancerCommissionData &&
+        creatorInfo && (
+          <Card className="bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20">
+            <CardContent className="p-6">
+              <div className="mb-4">
+                <h4 className="font-semibold text-lg mb-1">
+                  Commission Sharing Agreement
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Partnership with {creatorInfo.name} (
+                  {creatorInfo.role === "team_lead"
+                    ? "Team Lead"
+                    : "Sales Agent"}
+                  )
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">You receive</p>
               </div>
-              <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
-                <p className="text-sm text-muted-foreground mb-1">Creator's Share ({currentUser.commissionSharing?.creatorPercentage}%)</p>
-                <p className="text-3xl font-semibold text-accent">
-                  ₦{freelancerCommissionData.creatorShare.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{creatorInfo.name} receives</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Your Share (
+                    {currentUser.commissionSharing?.freelancerPercentage}%)
+                  </p>
+                  <p className="text-3xl font-semibold text-orange-500">
+                    ₦{freelancerCommissionData.freelancerShare.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    You receive
+                  </p>
+                </div>
+                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Creator's Share (
+                    {currentUser.commissionSharing?.creatorPercentage}%)
+                  </p>
+                  <p className="text-3xl font-semibold text-accent">
+                    ₦{freelancerCommissionData.creatorShare.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {creatorInfo.name} receives
+                  </p>
+                </div>
+                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Total Commission
+                  </p>
+                  <p className="text-3xl font-semibold text-primary">
+                    ₦{freelancerCommissionData.totalCommission.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    100% split
+                  </p>
+                </div>
               </div>
-              <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm text-muted-foreground mb-1">Total Commission</p>
-                <p className="text-3xl font-semibold text-primary">
-                  ₦{freelancerCommissionData.totalCommission.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">100% split</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Team Lead: Agent Commission Overview */}
       {currentUser.role === "team_lead" && (
@@ -280,13 +382,16 @@ export function CommissionPreview() {
           <CardHeader>
             <CardTitle>Team Commission Overview</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Commission breakdown by agent • Your 5% bonus: ₦{teamLeadBonus.toLocaleString()}
+              Commission breakdown by agent • Your 5% bonus: ₦
+              {teamLeadBonus.toLocaleString()}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {teamMembers.map((member) => {
-                const memberBonus = Math.round(member.performance.totalCommission * 0.05);
+                const memberBonus = Math.round(
+                  member.performance.totalCommission * 0.05,
+                );
                 return (
                   <div
                     key={member.id}
@@ -295,10 +400,14 @@ export function CommissionPreview() {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.email}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Agent Commission</p>
+                        <p className="text-sm text-muted-foreground">
+                          Agent Commission
+                        </p>
                         <p className="text-xl font-semibold text-accent">
                           ₦{member.performance.totalCommission.toLocaleString()}
                         </p>
@@ -309,16 +418,28 @@ export function CommissionPreview() {
                     </div>
                     <div className="grid grid-cols-3 gap-3 text-sm">
                       <div className="p-2 bg-card rounded">
-                        <p className="text-muted-foreground text-xs">Deals Completed</p>
-                        <p className="font-semibold">{member.performance.dealsCompleted}</p>
+                        <p className="text-muted-foreground text-xs">
+                          Deals Completed
+                        </p>
+                        <p className="font-semibold">
+                          {member.performance.dealsCompleted}
+                        </p>
                       </div>
                       <div className="p-2 bg-card rounded">
-                        <p className="text-muted-foreground text-xs">In Progress</p>
-                        <p className="font-semibold">{member.performance.dealsInProgress}</p>
+                        <p className="text-muted-foreground text-xs">
+                          In Progress
+                        </p>
+                        <p className="font-semibold">
+                          {member.performance.dealsInProgress}
+                        </p>
                       </div>
                       <div className="p-2 bg-card rounded">
-                        <p className="text-muted-foreground text-xs">Active Leads</p>
-                        <p className="font-semibold">{member.performance.leadsAssigned}</p>
+                        <p className="text-muted-foreground text-xs">
+                          Active Leads
+                        </p>
+                        <p className="font-semibold">
+                          {member.performance.leadsAssigned}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -336,7 +457,9 @@ export function CommissionPreview() {
           <CardHeader>
             <CardTitle>Monthly Commission Trend</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentUser.role === "team_lead" ? "Team performance - Last 6 months" : "Last 6 months performance"}
+              {currentUser.role === "team_lead"
+                ? "Team performance - Last 6 months"
+                : "Last 6 months performance"}
             </p>
           </CardHeader>
           <CardContent>
@@ -352,7 +475,10 @@ export function CommissionPreview() {
                       border: "1px solid #e2e8f0",
                       borderRadius: "8px",
                     }}
-                    formatter={(value) => [`₦${value.toLocaleString()}`, "Commission"]}
+                    formatter={(value) => [
+                      `₦${value.toLocaleString()}`,
+                      "Commission",
+                    ]}
                   />
                   <Bar dataKey="amount" fill="#4f46e5" radius={[8, 8, 0, 0]} />
                 </BarChart>
@@ -370,7 +496,9 @@ export function CommissionPreview() {
           <Card>
             <CardHeader>
               <CardTitle>Commission Breakdown</CardTitle>
-              <p className="text-sm text-muted-foreground">Lead vs Closer commission split</p>
+              <p className="text-sm text-muted-foreground">
+                Lead vs Closer commission split
+              </p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -380,7 +508,9 @@ export function CommissionPreview() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
@@ -401,12 +531,20 @@ export function CommissionPreview() {
               </ResponsiveContainer>
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div className="p-4 bg-primary/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Lead Commission</p>
-                  <p className="font-semibold text-lg text-primary">{commissionSummary.leadCommission}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Lead Commission
+                  </p>
+                  <p className="font-semibold text-lg text-primary">
+                    {commissionSummary.leadCommission}
+                  </p>
                 </div>
                 <div className="p-4 bg-accent/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Closer Commission</p>
-                  <p className="font-semibold text-lg text-accent">{commissionSummary.closerCommission}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Closer Commission
+                  </p>
+                  <p className="font-semibold text-lg text-accent">
+                    {commissionSummary.closerCommission}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -418,33 +556,52 @@ export function CommissionPreview() {
           <Card>
             <CardHeader>
               <CardTitle>Cluster Performance</CardTitle>
-              <p className="text-sm text-muted-foreground">{currentUser.clusterName} - Key Metrics</p>
+              <p className="text-sm text-muted-foreground">
+                {currentUser.clusterName} - Key Metrics
+              </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Total Team Commission</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Team Commission
+                    </span>
                     <DollarSign className="w-5 h-5 text-accent" />
                   </div>
                   <p className="text-2xl font-semibold text-accent">
-                    ₦{teamMembers.reduce((sum, m) => sum + m.performance.totalCommission, 0).toLocaleString()}
+                    ₦
+                    {teamMembers
+                      .reduce(
+                        (sum, m) => sum + m.performance.totalCommission,
+                        0,
+                      )
+                      .toLocaleString()}
                   </p>
                 </div>
                 <div className="p-4 bg-primary/10 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Active Team Members</span>
+                    <span className="text-sm text-muted-foreground">
+                      Active Team Members
+                    </span>
                     <Users2 className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="text-2xl font-semibold text-primary">{teamMembers.length}</p>
+                  <p className="text-2xl font-semibold text-primary">
+                    {teamMembers.length}
+                  </p>
                 </div>
                 <div className="p-4 bg-warning/10 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Team Deals in Progress</span>
+                    <span className="text-sm text-muted-foreground">
+                      Team Deals in Progress
+                    </span>
                     <Clock className="w-5 h-5 text-warning" />
                   </div>
                   <p className="text-2xl font-semibold text-warning">
-                    {teamMembers.reduce((sum, m) => sum + m.performance.dealsInProgress, 0)}
+                    {teamMembers.reduce(
+                      (sum, m) => sum + m.performance.dealsInProgress,
+                      0,
+                    )}
                   </p>
                 </div>
               </div>
@@ -470,12 +627,17 @@ export function CommissionPreview() {
             <CardContent>
               <div className="space-y-4">
                 {eligibleCommissions
-                  .filter(deal => deal.paymentPlan?.type === "installment")
+                  .filter((deal) => deal.paymentPlan?.type === "installment")
                   .map((deal) => {
-                    const earnings = calculateEarnedCommission(deal.commissionBreakdown);
-                    const earnedPercentage = deal.commission > 0 
-                      ? Math.round((earnings.earnedTotal / deal.commission) * 100) 
-                      : 0;
+                    const earnings = calculateEarnedCommission(
+                      deal.commissionBreakdown,
+                    );
+                    const earnedPercentage =
+                      deal.commission > 0
+                        ? Math.round(
+                            (earnings.earnedTotal / deal.commission) * 100,
+                          )
+                        : 0;
 
                     return (
                       <div
@@ -488,7 +650,9 @@ export function CommissionPreview() {
                               <h4 className="font-semibold">{deal.leadName}</h4>
                               <Badge variant="outline">{deal.id}</Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">{deal.asset}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {deal.asset}
+                            </p>
                           </div>
                           <Dialog>
                             <DialogTrigger asChild>
@@ -498,50 +662,78 @@ export function CommissionPreview() {
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>Installment Commission Details</DialogTitle>
+                                <DialogTitle>
+                                  Installment Commission Details
+                                </DialogTitle>
                                 <DialogDescription>
-                                  Detailed commission breakdown for {deal.leadName}
+                                  Detailed commission breakdown for{" "}
+                                  {deal.leadName}
                                 </DialogDescription>
                               </DialogHeader>
-                              <InstallmentCommissionTracker commissionBreakdown={deal.commissionBreakdown} />
+                              <InstallmentCommissionTracker
+                                commissionBreakdown={deal.commissionBreakdown}
+                              />
                             </DialogContent>
                           </Dialog>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                           <div className="p-3 bg-accent/5 rounded-lg border border-accent/20">
-                            <p className="text-xs text-muted-foreground mb-1">Earned</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Earned
+                            </p>
                             <p className="text-xl font-semibold text-accent">
                               {formatNaira(earnings.earnedTotal)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {deal.commissionBreakdown.filter(c => c.status === "earned" || c.status === "paid").length} installments
+                              {
+                                deal.commissionBreakdown.filter(
+                                  (c) =>
+                                    c.status === "earned" ||
+                                    c.status === "paid",
+                                ).length
+                              }{" "}
+                              installments
                             </p>
                           </div>
                           <div className="p-3 bg-warning/5 rounded-lg border border-warning/20">
-                            <p className="text-xs text-muted-foreground mb-1">Pending</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Pending
+                            </p>
                             <p className="text-xl font-semibold text-warning">
                               {formatNaira(earnings.pendingTotal)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {deal.commissionBreakdown.filter(c => c.status === "pending").length} installments
+                              {
+                                deal.commissionBreakdown.filter(
+                                  (c) => c.status === "pending",
+                                ).length
+                              }{" "}
+                              installments
                             </p>
                           </div>
                           <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                            <p className="text-xs text-muted-foreground mb-1">Total</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Total
+                            </p>
                             <p className="text-xl font-semibold text-primary">
                               {formatNaira(deal.commission)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {deal.paymentPlan?.numberOfInstallments} installments
+                              {deal.paymentPlan?.numberOfInstallments}{" "}
+                              installments
                             </p>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Commission Progress</span>
-                            <span className="font-semibold">{earnedPercentage}%</span>
+                            <span className="text-muted-foreground">
+                              Commission Progress
+                            </span>
+                            <span className="font-semibold">
+                              {earnedPercentage}%
+                            </span>
                           </div>
                           <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div
@@ -561,7 +753,9 @@ export function CommissionPreview() {
           <Card>
             <CardHeader>
               <CardTitle>Commission Details</CardTitle>
-              <p className="text-sm text-muted-foreground">Detailed breakdown of your commissions</p>
+              <p className="text-sm text-muted-foreground">
+                Detailed breakdown of your commissions
+              </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -573,18 +767,28 @@ export function CommissionPreview() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-semibold">{commission.leadName}</h4>
+                          <h4 className="font-semibold">
+                            {commission.leadName}
+                          </h4>
                           <Badge variant="outline">{commission.id}</Badge>
                           <Badge className={statusColors[commission.status]}>
                             {commission.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{commission.asset}</p>
-                        <p className="text-sm text-muted-foreground">Property Value: {commission.propertyValue}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {commission.asset}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Property Value: {commission.propertyValue}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground mb-1">Total Commission</p>
-                        <p className="text-2xl font-semibold text-accent">{commission.totalCommission}</p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Total Commission
+                        </p>
+                        <p className="text-2xl font-semibold text-accent">
+                          {commission.totalCommission}
+                        </p>
                       </div>
                     </div>
 
@@ -592,21 +796,31 @@ export function CommissionPreview() {
                       <div className="p-3 bg-card rounded-lg border border-border">
                         <div className="flex items-center gap-2 mb-1">
                           <Users className="w-4 h-4 text-primary" />
-                          <span className="text-xs text-muted-foreground">Lead Commission (2%)</span>
+                          <span className="text-xs text-muted-foreground">
+                            Lead Commission (2%)
+                          </span>
                         </div>
-                        <p className="font-semibold text-primary">{commission.leadCommission}</p>
+                        <p className="font-semibold text-primary">
+                          {commission.leadCommission}
+                        </p>
                       </div>
                       <div className="p-3 bg-card rounded-lg border border-border">
                         <div className="flex items-center gap-2 mb-1">
                           <CircleCheck className="w-4 h-4 text-accent" />
-                          <span className="text-xs text-muted-foreground">Closer Commission (1%)</span>
+                          <span className="text-xs text-muted-foreground">
+                            Closer Commission (1%)
+                          </span>
                         </div>
-                        <p className="font-semibold text-accent">{commission.closerCommission}</p>
+                        <p className="font-semibold text-accent">
+                          {commission.closerCommission}
+                        </p>
                       </div>
                       <div className="p-3 bg-card rounded-lg border border-border">
                         <div className="flex items-center gap-2 mb-1">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">Payout Date</span>
+                          <span className="text-xs text-muted-foreground">
+                            Payout Date
+                          </span>
                         </div>
                         <p className="font-semibold">{commission.payoutDate}</p>
                       </div>
@@ -614,11 +828,16 @@ export function CommissionPreview() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Eligibility Status</p>
+                        <p className="text-sm text-muted-foreground">
+                          Eligibility Status
+                        </p>
                         <p className="font-medium">{commission.eligibility}</p>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Commission Type: <span className="font-medium text-foreground">{commission.commissionType}</span>
+                        Commission Type:{" "}
+                        <span className="font-medium text-foreground">
+                          {commission.commissionType}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -642,8 +861,8 @@ export function CommissionPreview() {
                 <div>
                   <p className="font-medium mb-1">Lead Commission (2%)</p>
                   <p className="text-muted-foreground">
-                    Earned when you generate and qualify a lead that is assigned to you.
-                    Paid regardless of who closes the deal.
+                    Earned when you generate and qualify a lead that is assigned
+                    to you. Paid regardless of who closes the deal.
                   </p>
                 </div>
               </div>
@@ -654,8 +873,9 @@ export function CommissionPreview() {
                 <div>
                   <p className="font-medium mb-1">Closer Commission (1%)</p>
                   <p className="text-muted-foreground">
-                    Additional commission earned when you successfully close a deal from start to finish.
-                    Only applicable when you are both lead generator and closer.
+                    Additional commission earned when you successfully close a
+                    deal from start to finish. Only applicable when you are both
+                    lead generator and closer.
                   </p>
                 </div>
               </div>
