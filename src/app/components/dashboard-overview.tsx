@@ -1,10 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, Users, DollarSign, Clock, Users2, Target, User, CircleCheck } from "lucide-react";
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  Clock,
+  Users2,
+  Target,
+  User,
+  CircleCheck,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { useUser } from "../contexts/user-context";
 import { reportsApi } from "../utils/api-service";
 import { leadsApi } from "../utils/api-service";
@@ -34,10 +52,22 @@ export function DashboardOverview() {
 
   // Team-wide stats for Team Leads
   const teamStats = {
-    totalLeads: teamMembers.reduce((sum, m) => sum + (m.performance?.leadsAssigned || 0), 0),
-    totalDealsCompleted: teamMembers.reduce((sum, m) => sum + (m.performance?.dealsCompleted || 0), 0),
-    totalDealsInProgress: teamMembers.reduce((sum, m) => sum + (m.performance?.dealsInProgress || 0), 0),
-    totalCommission: teamMembers.reduce((sum, m) => sum + (m.performance?.totalCommission || 0), 0),
+    totalLeads: teamMembers.reduce(
+      (sum, m) => sum + (m.performance?.leadsAssigned || 0),
+      0,
+    ),
+    totalDealsCompleted: teamMembers.reduce(
+      (sum, m) => sum + (m.performance?.dealsCompleted || 0),
+      0,
+    ),
+    totalDealsInProgress: teamMembers.reduce(
+      (sum, m) => sum + (m.performance?.dealsInProgress || 0),
+      0,
+    ),
+    totalCommission: teamMembers.reduce(
+      (sum, m) => sum + (m.performance?.totalCommission || 0),
+      0,
+    ),
   };
 
   useEffect(() => {
@@ -49,11 +79,15 @@ export function DashboardOverview() {
       .then(([performance, leads]) => {
         setPerformanceData(performance);
         setFunnelData(
-          (performance.conversionMetrics || []).map((item: any, idx: number) => ({
-            stage: item.stage,
-            count: item.count,
-            color: ["#6366f1", "#f59e42", "#fbbf24", "#10b981", "#ef4444"][idx % 5],
-          }))
+          (performance.conversionMetrics || []).map(
+            (item: any, idx: number) => ({
+              stage: item.stage,
+              count: item.count,
+              color: ["#6366f1", "#f59e42", "#fbbf24", "#10b981", "#ef4444"][
+                idx % 5
+              ],
+            }),
+          ),
         );
         setRecentLeads(leads || []);
       })
@@ -85,11 +119,13 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foregrperformanceData?.personalLeads || 0}</p>
-                    <p className="text-sm text-accent mt-2">
-                      Personal pipelinetext-sm text-accent mt-2">
-                      +3 this week
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Personal Active Leads
                     </p>
+                    <p className="text-3xl font-semibold text-primary">
+                      {performanceData?.personalLeads || 0}
+                    </p>
+                    <p className="text-sm text-accent mt-2">+3 this week</p>
                   </div>
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Users className="w-6 h-6 text-primary" />
@@ -102,8 +138,12 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">MperformanceData?.personalDealsCompleted || 0
-                    <p className="text-3xl font-semibold text-accent">{teamLeadPersonalStats.personalDealsCompleted}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      My Deals Completed
+                    </p>
+                    <p className="text-3xl font-semibold text-accent">
+                      {performanceData?.personalDealsCompleted || 0}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       This month
                     </p>
@@ -119,8 +159,12 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">MyperformanceData?.personalDealsInProgress || 0
-                    <p className="text-3xl font-semibold text-warning">{teamLeadPersonalStats.personalDealsInProgress}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      My Deals in Progress
+                    </p>
+                    <p className="text-3xl font-semibold text-primary">
+                      {performanceData?.personalDealsInProgress || 0}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Active pipeline
                     </p>
@@ -136,9 +180,14 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">My Sales Commission</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      My Sales Commission
+                    </p>
                     <p className="text-3xl font-semibold text-accent">
-                      ₦{(performanceData?.personalCommission || 0).toLocaleString()}
+                      ₦
+                      {(
+                        performanceData?.personalCommission || 0
+                      ).toLocaleString()}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Personal earnings
@@ -166,8 +215,12 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Team Active Leads</p>
-                    <p className="text-3xl font-semibold">{teamStats.totalLeads}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Team Active Leads
+                    </p>
+                    <p className="text-3xl font-semibold">
+                      {teamStats.totalLeads}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Across {teamMembers.length} agents
                     </p>
@@ -183,8 +236,12 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Team Deals Completed</p>
-                    <p className="text-3xl font-semibold text-accent">{teamStats.totalDealsCompleted}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Team Deals Completed
+                    </p>
+                    <p className="text-3xl font-semibold text-accent">
+                      {teamStats.totalDealsCompleted}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       This month
                     </p>
@@ -200,8 +257,12 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Team Deals in Progress</p>
-                    <p className="text-3xl font-semibold text-warning">{teamStats.totalDealsInProgress}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Team Deals in Progress
+                    </p>
+                    <p className="text-3xl font-semibold text-warning">
+                      {teamStats.totalDealsInProgress}
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Active pipeline
                     </p>
@@ -217,7 +278,9 @@ export function DashboardOverview() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Team Commission Pool</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Team Commission Pool
+                    </p>
                     <p className="text-3xl font-semibold text-accent">
                       ₦{teamStats.totalCommission.toLocaleString()}
                     </p>
@@ -242,8 +305,12 @@ export function DashboardOverview() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Leads Assigned</p>
-                  <p className="text-3xl font-semibold">{currentUser.performance.leadsAssigned}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Leads Assigned
+                  </p>
+                  <p className="text-3xl font-semibold">
+                    {currentUser.performance.leadsAssigned}
+                  </p>
                   <p className="text-sm text-accent mt-2">
                     +12% from last month
                   </p>
@@ -259,8 +326,12 @@ export function DashboardOverview() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Deals in Progress</p>
-                  <p className="text-3xl font-semibold text-warning">{currentUser.performance.dealsInProgress}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Deals in Progress
+                  </p>
+                  <p className="text-3xl font-semibold text-warning">
+                    {currentUser.performance.dealsInProgress}
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     Active pipeline
                   </p>
@@ -276,7 +347,9 @@ export function DashboardOverview() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Potential Commission</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Potential Commission
+                  </p>
                   <p className="text-3xl font-semibold text-accent">₦28,400</p>
                   <p className="text-sm text-accent mt-2">
                     +18% from last month
@@ -293,12 +366,16 @@ export function DashboardOverview() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Earned Commission</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Earned Commission
+                  </p>
                   <p className="text-3xl font-semibold text-accent">
                     ₦{currentUser.performance.totalCommission.toLocaleString()}
                   </p>
                   <p className="text-sm text-accent mt-2">
-                    +₦{currentUser.performance.thisMonthCommission.toLocaleString()} this month
+                    +₦
+                    {currentUser.performance.thisMonthCommission.toLocaleString()}{" "}
+                    this month
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -316,7 +393,9 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle>Sales Funnel</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentUser.role === "team_lead" ? "Team pipeline stages" : "Current pipeline stages"}
+              {currentUser.role === "team_lead"
+                ? "Team pipeline stages"
+                : "Current pipeline stages"}
             </p>
           </CardHeader>
           <CardContent>
@@ -342,8 +421,13 @@ export function DashboardOverview() {
             <div className="grid grid-cols-2 gap-4 mt-4">
               {funnelData.map((item) => (
                 <div key={item.stage} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-sm text-muted-foreground">{item.stage}: {item.count}</span>
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {item.stage}: {item.count}
+                  </span>
                 </div>
               ))}
             </div>
@@ -355,7 +439,9 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle>Recent Leads</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentUser.role === "team_lead" ? "Latest cluster leads" : "Your latest assigned leads"}
+              {currentUser.role === "team_lead"
+                ? "Latest cluster leads"
+                : "Your latest assigned leads"}
             </p>
           </CardHeader>
           <CardContent>
@@ -369,11 +455,19 @@ export function DashboardOverview() {
                     <div>
                       <p className="font-medium">{lead.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {lead.asset?.name || "-"} &middot; {lead.asset?.type || "-"}<br />
-                        <span className="text-xs">{lead.asset?.location || "-"}</span>
+                        {lead.asset?.name || "-"} &middot;{" "}
+                        {lead.asset?.type || "-"}
+                        <br />
+                        <span className="text-xs">
+                          {lead.asset?.location || "-"}
+                        </span>
                       </p>
                     </div>
-                    <Badge className={statusColors[lead.status?.toLowerCase() || "new"]}>
+                    <Badge
+                      className={
+                        statusColors[lead.status?.toLowerCase() || "new"]
+                      }
+                    >
                       {statusLabels[lead.status?.toLowerCase() || "new"]}
                     </Badge>
                   </div>
