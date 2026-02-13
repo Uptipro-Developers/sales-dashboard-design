@@ -73,17 +73,25 @@ export function LeadManagement() {
   });
   useEffect(() => {
     setLoading(true);
-    Promise.all([leadsApi.getAll(), assetsApi.getAll({ status: "Available" })])
+    Promise.all([leadsApi.getAll(), assetsApi.getAll({ status: "published" })])
       .then(([leadsData, assetsData]) => {
         setLeads(leadsData);
         setAvailableAssets(assetsData);
       })
-      .then(setLeads)
       .finally(() => setLoading(false));
   }, []);
 
   const handleCreateLead = async () => {
-    await leadsApi.create(newLeadData);
+    const assignedToId =
+      newLeadData.assignTo === "myself"
+        ? currentUser?.id
+        : newLeadData.assignTo;
+    await leadsApi.create({
+      ...newLeadData,
+      assignedToId: assignedToId || undefined,
+      assetInterest: newLeadData.assetInterests[0] || undefined,
+      leadSource: newLeadData.source,
+    });
     setIsCreateModalOpen(false);
     setNewLeadData({
       name: "",
