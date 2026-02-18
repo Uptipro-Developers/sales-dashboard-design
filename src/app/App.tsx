@@ -1,18 +1,23 @@
 "use client";
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { useState } from "react";
-import { 
-  LayoutDashboard, 
-  Package, 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  UserCog, 
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  TrendingUp,
+  DollarSign,
+  UserCog,
   Briefcase,
   Receipt,
   Settings,
-  HelpCircle
+  HelpCircle,
 } from "lucide-react";
 
 // Import components
@@ -31,9 +36,20 @@ import { Signup, SignupData } from "./components/signup";
 import { Sidebar } from "./components/sidebar";
 import { TopBar } from "./components/top-bar";
 import { UserProvider, useUser, User, UserRole } from "./contexts/user-context";
+import { ToastProvider } from "./contexts/toast-context";
 import { authApi, signupApi } from "./utils/api-service";
 
-type NavItem = "overview" | "assets" | "leads" | "deals" | "commission" | "agents" | "freelancers" | "profile" | "performance" | "help";
+type NavItem =
+  | "overview"
+  | "assets"
+  | "leads"
+  | "deals"
+  | "commission"
+  | "agents"
+  | "freelancers"
+  | "profile"
+  | "performance"
+  | "help";
 
 export type NavGroup = {
   id: string;
@@ -50,7 +66,7 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
   const { currentUser } = useUser();
 
   // Define navItems for the Sidebar
-  const navItems: NavGroup[] = [
+  const allNavItems: NavGroup[] = [
     {
       id: "main",
       label: "Main",
@@ -80,6 +96,36 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
       ],
     },
   ];
+
+  // Filter navItems based on user role
+  const navItems: NavGroup[] = allNavItems
+    .map((group) => {
+      // Hide entire management group for freelancers (Issue 27)
+      if (group.id === "management" && currentUser?.role === "FREELANCER") {
+        return null;
+      }
+
+      // Filter items within management group
+      if (group.id === "management") {
+        const filteredItems = group.items.filter((item) => {
+          // Hide agents module from agents (Issue 20) - only team leads and admins can create agents
+          if (item.id === "agents" && currentUser?.role === "AGENT") {
+            return false;
+          }
+          return true;
+        });
+
+        // If no items remain, hide the group
+        if (filteredItems.length === 0) {
+          return null;
+        }
+
+        return { ...group, items: filteredItems };
+      }
+
+      return group;
+    })
+    .filter((group): group is NavGroup => group !== null);
 
   return (
     <div className="flex h-screen bg-background">
@@ -175,36 +221,30 @@ export default function App() {
   // Show main app if authenticated
   return (
     <Router>
-      <UserProvider>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <Login
-                onLogin={handleLogin}
-                onSwitchToSignup={() => setAuthView("signup")}
-              />
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <Signup
-                onSignup={handleSignup}
-                onSwitchToLogin={() => setAuthView("login")}
-              />
-            }
-          />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <AppContent onLogout={handleLogout} />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </UserProvider>
+      <ToastProvider>
+        <UserProvider>
+          <Routes>
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route
+              path="/signup"
+              element={
+                <Signup
+                  onSignup={handleSignup}
+                  onSwitchToLogin={() => setAuthView("login")}
+                />
+              }
+            />
+            <Route
+              path="/*"
+              element={
+                <PrivateRoute>
+                  <AppContent onLogout={handleLogout} />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </UserProvider>
+      </ToastProvider>
     </Router>
   );
 }

@@ -314,7 +314,7 @@ export function AgentManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
                 <div className="p-3 bg-muted/30 rounded-lg">
                   <p className="text-xs text-muted-foreground mb-1">
                     Leads Assigned

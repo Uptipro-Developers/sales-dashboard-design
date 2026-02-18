@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import {
   User,
-  Lock,
   Briefcase,
   Heart,
   Building2,
@@ -64,7 +63,6 @@ export function ProfileSettings() {
     bankName: user.bankName || "",
     accountNumber: user.accountNumber || "",
     beneficiaryName: user.beneficiaryName || "",
-    temporaryPassword: "",
   });
 
   useEffect(() => {
@@ -277,9 +275,10 @@ export function ProfileSettings() {
                 <Input
                   id="phoneNumber"
                   value={formData.phoneNumber}
-                  onChange={(e) =>
-                    handleInputChange("phoneNumber", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9+]/g, "");
+                    handleInputChange("phoneNumber", value);
+                  }}
                   placeholder="+234 XXX XXX XXXX"
                 />
               </div>
@@ -291,7 +290,8 @@ export function ProfileSettings() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  disabled
+                  className="bg-muted cursor-not-allowed"
                   placeholder="email@example.com"
                 />
               </div>
@@ -328,7 +328,10 @@ export function ProfileSettings() {
                 <Input
                   id="nin"
                   value={formData.nin}
-                  onChange={(e) => handleInputChange("nin", e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    handleInputChange("nin", value);
+                  }}
                   placeholder="Enter 11-digit NIN"
                   maxLength={11}
                 />
@@ -408,9 +411,10 @@ export function ProfileSettings() {
               <Input
                 id="kinFullName"
                 value={formData.kinFullName}
-                onChange={(e) =>
-                  handleInputChange("kinFullName", e.target.value)
-                }
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[0-9]/g, "");
+                  handleInputChange("kinFullName", value);
+                }}
                 placeholder="Enter next of kin's full name"
               />
             </div>
@@ -421,9 +425,10 @@ export function ProfileSettings() {
                 <Input
                   id="kinPhoneNumber"
                   value={formData.kinPhoneNumber}
-                  onChange={(e) =>
-                    handleInputChange("kinPhoneNumber", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9+]/g, "");
+                    handleInputChange("kinPhoneNumber", value);
+                  }}
                   placeholder="+234 XXX XXX XXXX"
                 />
               </div>
@@ -494,9 +499,10 @@ export function ProfileSettings() {
                 <Input
                   id="accountNumber"
                   value={formData.accountNumber}
-                  onChange={(e) =>
-                    handleInputChange("accountNumber", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    handleInputChange("accountNumber", value);
+                  }}
                   placeholder="Enter 10-digit account number"
                   maxLength={10}
                 />
@@ -506,40 +512,13 @@ export function ProfileSettings() {
                 <Input
                   id="beneficiaryName"
                   value={formData.beneficiaryName}
-                  onChange={(e) =>
-                    handleInputChange("beneficiaryName", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[0-9]/g, "");
+                    handleInputChange("beneficiaryName", value);
+                  }}
                   placeholder="Enter account holder name"
                 />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Login Password */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-primary" />
-              <CardTitle>Login Password</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="temporaryPassword">Temporary Password</Label>
-              <Input
-                id="temporaryPassword"
-                type="password"
-                value={formData.temporaryPassword}
-                onChange={(e) =>
-                  handleInputChange("temporaryPassword", e.target.value)
-                }
-                placeholder="Leave blank to auto-generate"
-              />
-              <p className="text-sm text-muted-foreground">
-                Leave this field blank to auto-generate a secure password. A new
-                password will be sent to your email.
-              </p>
             </div>
           </CardContent>
         </Card>
