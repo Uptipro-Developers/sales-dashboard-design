@@ -26,6 +26,7 @@ import {
 } from "./ui/select";
 import { useUser } from "../contexts/user-context";
 import { LeadDetailView } from "./lead-detail-view";
+import { useToast } from "../contexts/toast-context";
 
 const statusLabels: Record<string, string> = {
   new: "New Lead",
@@ -50,6 +51,7 @@ const sourceColors: Record<string, string> = {
 
 export function LeadManagement() {
   const { currentUser, teamMembers } = useUser();
+  const { success, error } = useToast();
   const [leads, setLeads] = useState<any[]>([]);
   const [availableAssets, setAvailableAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,33 +84,51 @@ export function LeadManagement() {
   }, []);
 
   const handleCreateLead = async () => {
-    const assignedToId =
-      newLeadData.assignTo === "myself"
-        ? currentUser?.id
-        : newLeadData.assignTo;
-    await leadsApi.create({
-      ...newLeadData,
-      assignedToId: assignedToId || undefined,
-      assetInterest: newLeadData.assetInterests[0] || undefined,
-      leadSource: newLeadData.source,
-    });
-    setIsCreateModalOpen(false);
-    setNewLeadData({
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      source: "self",
-      assetInterests: [],
-      budget: "",
-      notes: "",
-      followUpDate: "",
-      assignTo: "",
-    });
-    setLeads(await leadsApi.getAll());
-  };
+    // Validate required fields
+    if (!newLeadData.name || !newLeadData.name.trim()) {
+      error("Validation Error", "Lead name is required");
+      return;
+    }
+    if (!newLeadData.email || !newLeadData.email.trim()) {
+      error("Validation Error", "Email is required");
+      return;
+    }
 
-  const handleAddAsset = (assetId: string) => {
+    try {
+      const assignedToId =
+        newLeadData.assignTo === "myself"
+          ? currentUser?.id
+          : newLeadData.assignTo;
+      await leadsApi.create({
+        ...newLeadData,
+        assignedToId: assignedToId || undefined,
+        assetInterest: newLeadData.assetInterests[0] || undefined,
+        leadSource: newLeadData.source,
+      });
+      setIsCreateModalOpen(false);
+      setNewLeadData({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        source: "self",
+        assetInterests: [],
+        budget: "",
+        notes: "",
+        followUpDate: "",
+        assignTo: "",
+      });
+      setLeads(await leadsApi.getAll());
+      success(
+        "Lead created successfully",
+        `${newLeadData.name} has been added to your pipeline`,
+      );
+    } catch (err: any) {
+      error(
+        "Failed to create lead",
+        err.response?.data?.message || err.message || "An error occurred",
+      );
+    }
     if (!newLeadData.assetInterests.includes(assetId)) {
       setNewLeadData({
         ...newLeadData,
@@ -248,9 +268,11 @@ export function LeadManagement() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">
+                      Full Name <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="name"
                       placeholder="John Doe"
@@ -261,7 +283,9 @@ export function LeadManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -276,7 +300,7 @@ export function LeadManagement() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
                     <Input

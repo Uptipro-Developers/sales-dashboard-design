@@ -81,6 +81,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 type Asset = {
   id: string;
@@ -122,6 +123,8 @@ export function AssetBrowser() {
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
+  const [selectedImage, setSelectedImage] = useState<any | null>(null);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
   useEffect(() => {
     assetsApi.getAll().then(setAssets);
@@ -137,7 +140,7 @@ export function AssetBrowser() {
       asset.type?.toLowerCase() === filterType.toLowerCase();
     const matchesStatus =
       filterStatus === "all" ||
-      asset.status?.toLowerCase() === filterStatus.toLowerCase();
+      asset.projectStatus?.toLowerCase() === filterStatus.toLowerCase();
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -594,6 +597,10 @@ export function AssetBrowser() {
                       <div
                         key={img.id}
                         className="relative aspect-square rounded overflow-hidden border hover:border-primary transition-colors group cursor-pointer"
+                        onClick={() => {
+                          setSelectedImage(img);
+                          setIsImageViewerOpen(true);
+                        }}
                       >
                         <img
                           src={img.url}
@@ -723,21 +730,22 @@ export function AssetBrowser() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
-                <SelectItem value="residential">Residential</SelectItem>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="industrial">Industrial</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="off-plan">Off-plan</SelectItem>
+                <SelectItem value="land">Land</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Project Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="reserved">Reserved</SelectItem>
-                <SelectItem value="sold">Sold</SelectItem>
+                <SelectItem value="under construction">
+                  Under Construction
+                </SelectItem>
+                <SelectItem value="planning">Planning</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex gap-2">
@@ -955,6 +963,24 @@ export function AssetBrowser() {
           </CardContent>
         </Card>
       )}
+
+      {/* Image Viewer Dialog */}
+      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedImage?.caption || "Property Image"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="relative w-full">
+            <img
+              src={selectedImage?.url}
+              alt={selectedImage?.caption || "Property image"}
+              className="w-full h-auto max-h-[70vh] object-contain rounded"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

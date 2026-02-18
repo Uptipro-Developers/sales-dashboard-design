@@ -15,7 +15,13 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "./ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -29,16 +35,20 @@ import {
 } from "./ui/alert-dialog";
 import { cn } from "./ui/utils";
 import { freelancersApi, clustersApi, userApi } from "../utils/api-service";
+import { useToast } from "../contexts/toast-context";
 
 export function FreelancerManagement() {
+  const { success, error } = useToast();
   const [freelancers, setFreelancers] = useState<any[]>([]);
   const [clusters, setClusters] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isAddFreelancerModalOpen, setIsAddFreelancerModalOpen] = useState(false);
+  const [isAddFreelancerModalOpen, setIsAddFreelancerModalOpen] =
+    useState(false);
   const [newFreelancerData, setNewFreelancerData] = useState({
     name: "",
     email: "",
+    password: "",
     clusterId: "",
     freelancerPercentage: 70,
     creatorPercentage: 30,
@@ -69,35 +79,62 @@ export function FreelancerManagement() {
 
   // Get freelancers created by the current user
   const myFreelancers = freelancers.filter(
-    (m) => m.role === "FREELANCER" && m.creatorId === currentUser?.id
+    (m) => m.role === "FREELANCER" && m.creatorId === currentUser?.id,
   );
 
   // For Agents: get all freelancers in their cluster
-  const clusterFreelancers = currentUser?.role === "AGENT"
-    ? freelancers.filter(
-        (m) => m.role === "FREELANCER" && m.clusterId === currentUser.clusterId
-      )
-    : [];
+  const clusterFreelancers =
+    currentUser?.role === "AGENT"
+      ? freelancers.filter(
+          (m) =>
+            m.role === "FREELANCER" && m.clusterId === currentUser.clusterId,
+        )
+      : [];
 
   const handleAddFreelancer = async () => {
-    await freelancersApi.create({
-      ...newFreelancerData,
-      creatorId: currentUser.id,
-    });
-    setIsAddFreelancerModalOpen(false);
-    setNewFreelancerData({
-      name: "",
-      email: "",
-      clusterId: currentUser.clusterId,
-      freelancerPercentage: 70,
-      creatorPercentage: 30,
-    });
-    setFreelancers(await freelancersApi.getAll());
+    try {
+      await freelancersApi.create({
+        ...newFreelancerData,
+        creatorId: currentUser.id,
+        // Auto-inherit cluster for agents (Issue 22)
+        clusterId:
+          currentUser?.role === "AGENT"
+            ? currentUser.clusterId
+            : newFreelancerData.clusterId,
+      });
+      setIsAddFreelancerModalOpen(false);
+      setNewFreelancerData({
+        name: "",
+        email: "",
+        password: "",
+        clusterId: currentUser.clusterId,
+        freelancerPercentage: 70,
+        creatorPercentage: 30,
+      });
+      setFreelancers(await freelancersApi.getAll());
+      success(
+        "Freelancer created successfully",
+        `${newFreelancerData.name} has been added to your team`,
+      );
+    } catch (err: any) {
+      error(
+        "Failed to create freelancer",
+        err.response?.data?.message || err.message || "An error occurred",
+      );
+    }
   };
 
   const handleRemoveFreelancer = async (freelancerId: string) => {
-    await freelancersApi.remove(freelancerId);
-    setFreelancers(await freelancersApi.getAll());
+    try {
+      await freelancersApi.remove(freelancerId);
+      setFreelancers(await freelancersApi.getAll());
+      success("Freelancer removed successfully");
+    } catch (err: any) {
+      error(
+        "Failed to remove freelancer",
+        err.response?.data?.message || err.message || "An error occurred",
+      );
+    }
   };
 
   const currentCluster = clusters.find((c) => c.id === currentUser?.clusterId);
@@ -108,10 +145,14 @@ export function FreelancerManagement() {
         <div>
           <h1>Freelancer Management</h1>
           <p className="text-muted-foreground">
-            Manage freelancers you've created • Default Cluster: {currentCluster?.name}
+            Manage freelancers you've created • Default Cluster:{" "}
+            {currentCluster?.name}
           </p>
         </div>
-        <Dialog open={isAddFreelancerModalOpen} onOpenChange={setIsAddFreelancerModalOpen}>
+        <Dialog
+          open={isAddFreelancerModalOpen}
+          onOpenChange={setIsAddFreelancerModalOpen}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -122,7 +163,8 @@ export function FreelancerManagement() {
             <DialogHeader>
               <DialogTitle>Add New Freelancer</DialogTitle>
               <DialogDescription>
-                Create a new freelancer account with commission sharing agreement
+                Create a new freelancer account with commission sharing
+                agreement
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -133,7 +175,10 @@ export function FreelancerManagement() {
                   placeholder="John Doe"
                   value={newFreelancerData.name}
                   onChange={(e) =>
-                    setNewFreelancerData({ ...newFreelancerData, name: e.target.value })
+                    setNewFreelancerData({
+                      ...newFreelancerData,
+                      name: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -145,7 +190,25 @@ export function FreelancerManagement() {
                   placeholder="john.doe@buyops.com"
                   value={newFreelancerData.email}
                   onChange={(e) =>
-                    setNewFreelancerData({ ...newFreelancerData, email: e.target.value })
+                    setNewFreelancerData({
+                      ...newFreelancerData,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="freelancer-password">Password</Label>
+                <Input
+                  id="freelancer-password"
+                  type="password"
+                  placeholder="Enter password"
+                  value={newFreelancerData.password}
+                  onChange={(e) =>
+                    setNewFreelancerData({
+                      ...newFreelancerData,
+                      password: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -154,8 +217,12 @@ export function FreelancerManagement() {
                 <Select
                   value={newFreelancerData.clusterId}
                   onValueChange={(value) =>
-                    setNewFreelancerData({ ...newFreelancerData, clusterId: value })
+                    setNewFreelancerData({
+                      ...newFreelancerData,
+                      clusterId: value,
+                    })
                   }
+                  disabled={currentUser?.role === "AGENT"}
                 >
                   <SelectTrigger id="freelancer-cluster">
                     <SelectValue />
@@ -164,11 +231,17 @@ export function FreelancerManagement() {
                     {clusters.map((cluster) => (
                       <SelectItem key={cluster.id} value={cluster.id}>
                         {cluster.name}
-                        {cluster.id === currentUser.clusterId && " (Your Cluster)"}
+                        {cluster.id === currentUser.clusterId &&
+                          " (Your Cluster)"}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {currentUser?.role === "AGENT" && (
+                  <p className="text-xs text-muted-foreground">
+                    Agents automatically assign freelancers to their own cluster
+                  </p>
+                )}
               </div>
 
               {/* Commission Sharing Configuration */}
@@ -189,17 +262,33 @@ export function FreelancerManagement() {
                       max="100"
                       value={newFreelancerData.freelancerPercentage}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
+                        const inputValue = e.target.value;
+                        // Allow empty string for editing
+                        if (inputValue === "") {
+                          setNewFreelancerData({
+                            ...newFreelancerData,
+                            freelancerPercentage: 0,
+                            creatorPercentage: 100,
+                          });
+                          return;
+                        }
+                        const value = parseInt(inputValue) || 0;
                         setNewFreelancerData({
                           ...newFreelancerData,
-                          freelancerPercentage: Math.min(100, Math.max(0, value)),
-                          creatorPercentage: 100 - Math.min(100, Math.max(0, value)),
+                          freelancerPercentage: Math.min(
+                            100,
+                            Math.max(0, value),
+                          ),
+                          creatorPercentage:
+                            100 - Math.min(100, Math.max(0, value)),
                         });
                       }}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="creator-percentage">Your Commission Share (%)</Label>
+                    <Label htmlFor="creator-percentage">
+                      Your Commission Share (%)
+                    </Label>
                     <Input
                       id="creator-percentage"
                       type="number"
@@ -208,17 +297,18 @@ export function FreelancerManagement() {
                     />
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Total must equal 100%. Adjust the freelancer's percentage and yours will
-                    auto-calculate.
+                    Total must equal 100%. Adjust the freelancer's percentage
+                    and yours will auto-calculate.
                   </div>
                 </div>
               </div>
 
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
                 <p className="text-muted-foreground">
-                  <strong>Note:</strong> The freelancer will receive an invitation email with
-                  login credentials. They can create leads and close deals, with commissions
-                  automatically split based on the agreement above.
+                  <strong>Note:</strong> The freelancer will receive an
+                  invitation email with login credentials. They can create leads
+                  and close deals, with commissions automatically split based on
+                  the agreement above.
                 </p>
               </div>
               <div className="flex justify-end gap-2">
@@ -233,7 +323,9 @@ export function FreelancerManagement() {
                   disabled={
                     !newFreelancerData.name ||
                     !newFreelancerData.email ||
-                    newFreelancerData.freelancerPercentage + newFreelancerData.creatorPercentage !== 100
+                    newFreelancerData.freelancerPercentage +
+                      newFreelancerData.creatorPercentage !==
+                      100
                   }
                 >
                   Create Freelancer
@@ -276,7 +368,8 @@ export function FreelancerManagement() {
                         Freelancer
                       </Badge>
                       <Badge variant="outline">
-                        {clusters.find((c) => c.id === freelancer.clusterId)?.name ?? "N/A"}
+                        {clusters.find((c) => c.id === freelancer.clusterId)
+                          ?.name ?? "N/A"}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -287,9 +380,16 @@ export function FreelancerManagement() {
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <Percent className="w-3 h-3 text-accent" />
-                          <span className="text-muted-foreground">Commission Split:</span>
+                          <span className="text-muted-foreground">
+                            Commission Split:
+                          </span>
                           <span className="font-medium text-accent">
-                            {freelancer.commissionSharing.freelancerPercentage ?? 0}% / {freelancer.commissionSharing.creatorPercentage ?? 0}%
+                            {freelancer.commissionSharing
+                              .freelancerPercentage ?? 0}
+                            % /{" "}
+                            {freelancer.commissionSharing.creatorPercentage ??
+                              0}
+                            %
                           </span>
                         </div>
                       </div>
@@ -299,7 +399,11 @@ export function FreelancerManagement() {
                 <div className="flex items-center gap-2">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -307,8 +411,9 @@ export function FreelancerManagement() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remove Freelancer</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {freelancer.name}? This action cannot
-                          be undone and will deactivate their account.
+                          Are you sure you want to remove {freelancer.name}?
+                          This action cannot be undone and will deactivate their
+                          account.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -333,7 +438,9 @@ export function FreelancerManagement() {
       {currentUser.role === "AGENT" && (
         <Card>
           <CardHeader>
-            <CardTitle>All Cluster Freelancers ({clusterFreelancers.length})</CardTitle>
+            <CardTitle>
+              All Cluster Freelancers ({clusterFreelancers.length})
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {clusterFreelancers.length === 0 ? (
@@ -343,7 +450,9 @@ export function FreelancerManagement() {
               </div>
             ) : (
               clusterFreelancers.map((freelancer) => {
-                const creator = teamMembers.find((m) => m.id === freelancer.creatorId);
+                const creator = teamMembers.find(
+                  (m) => m.id === freelancer.creatorId,
+                );
                 const isMyFreelancer = freelancer.creatorId === currentUser.id;
 
                 return (
@@ -351,7 +460,7 @@ export function FreelancerManagement() {
                     key={freelancer.id}
                     className={cn(
                       "flex items-start justify-between p-4 border border-border rounded-lg transition-colors",
-                      isMyFreelancer && "bg-accent/5 hover:bg-accent/10"
+                      isMyFreelancer && "bg-accent/5 hover:bg-accent/10",
                     )}
                   >
                     <div className="flex items-start gap-4">
@@ -368,7 +477,10 @@ export function FreelancerManagement() {
                             Freelancer
                           </Badge>
                           {isMyFreelancer && (
-                            <Badge variant="outline" className="bg-primary/10 text-primary">
+                            <Badge
+                              variant="outline"
+                              className="bg-primary/10 text-primary"
+                            >
                               Created by you
                             </Badge>
                           )}
@@ -379,17 +491,24 @@ export function FreelancerManagement() {
                         </div>
                         {creator && (
                           <div className="text-sm text-muted-foreground mb-1">
-                            Created by: <span className="font-medium">{creator.name}</span>
+                            Created by:{" "}
+                            <span className="font-medium">{creator.name}</span>
                           </div>
                         )}
                         {freelancer.commissionSharing && (
                           <div className="flex items-center gap-4 text-sm">
                             <div className="flex items-center gap-1">
                               <Percent className="w-3 h-3 text-accent" />
-                              <span className="text-muted-foreground">Commission Split:</span>
+                              <span className="text-muted-foreground">
+                                Commission Split:
+                              </span>
                               <span className="font-medium text-accent">
-                                {freelancer.commissionSharing.freelancerPercentage ?? 0}% /{" "}
-                                {freelancer.commissionSharing.creatorPercentage ?? 0}%
+                                {freelancer.commissionSharing
+                                  .freelancerPercentage ?? 0}
+                                % /{" "}
+                                {freelancer.commissionSharing
+                                  .creatorPercentage ?? 0}
+                                %
                               </span>
                             </div>
                           </div>
@@ -397,21 +516,38 @@ export function FreelancerManagement() {
                         {/* Performance Stats */}
                         <div className="flex items-center gap-4 mt-2 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Leads: </span>
-                            <span className="font-medium">{freelancer.performance?.leadsAssigned ?? 0}</span>
+                            <span className="text-muted-foreground">
+                              Leads:{" "}
+                            </span>
+                            <span className="font-medium">
+                              {freelancer.performance?.leadsAssigned ?? 0}
+                            </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">In Progress: </span>
-                            <span className="font-medium">{freelancer.performance?.dealsInProgress ?? 0}</span>
+                            <span className="text-muted-foreground">
+                              In Progress:{" "}
+                            </span>
+                            <span className="font-medium">
+                              {freelancer.performance?.dealsInProgress ?? 0}
+                            </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Completed: </span>
-                            <span className="font-medium">{freelancer.performance?.dealsCompleted ?? 0}</span>
+                            <span className="text-muted-foreground">
+                              Completed:{" "}
+                            </span>
+                            <span className="font-medium">
+                              {freelancer.performance?.dealsCompleted ?? 0}
+                            </span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Commission: </span>
+                            <span className="text-muted-foreground">
+                              Commission:{" "}
+                            </span>
                             <span className="font-medium text-accent">
-                              ₦{freelancer.performance?.totalCommission ? freelancer.performance.totalCommission.toLocaleString() : "0"}
+                              ₦
+                              {freelancer.performance?.totalCommission
+                                ? freelancer.performance.totalCommission.toLocaleString()
+                                : "0"}
                             </span>
                           </div>
                         </div>

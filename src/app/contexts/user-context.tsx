@@ -1,7 +1,18 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { userApi, agentsApi, clustersApi, leadsApi } from "../utils/api-service";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import {
+  userApi,
+  agentsApi,
+  clustersApi,
+  leadsApi,
+} from "../utils/api-service";
 
 export type UserRole = "TEAM_LEAD" | "AGENT" | "FREELANCER";
 
@@ -33,7 +44,12 @@ export interface TeamMember {
 
 export interface Notification {
   id: string;
-  type: "lead_assigned" | "deal_ready" | "commission" | "status_change" | "inspection_scheduled";
+  type:
+    | "lead_assigned"
+    | "deal_ready"
+    | "commission"
+    | "status_change"
+    | "inspection_scheduled";
   title: string;
   message: string;
   timestamp: string;
@@ -97,7 +113,17 @@ interface UserContextType {
   leads: Lead[];
   getVisibleLeads: () => Lead[];
   assignLeadToAgent: (leadId: string, agentId: string) => void;
-  addLead: (lead: Omit<Lead, "id" | "createdBy" | "createdByName" | "createdByRole" | "assignedDate" | "clusterId">) => void;
+  addLead: (
+    lead: Omit<
+      Lead,
+      | "id"
+      | "createdBy"
+      | "createdByName"
+      | "createdByRole"
+      | "assignedDate"
+      | "clusterId"
+    >,
+  ) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -118,6 +144,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         clustersApi.getAll(),
         leadsApi.getAll(),
       ]);
+      // Ensure notifications is always an array
+      if (user && !user.notifications) {
+        user.notifications = [];
+      }
       setCurrentUser(user);
       setTeamMembers(agents);
       setClusters(clustersData);
@@ -138,12 +168,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setCurrentUser({
       ...currentUser,
       notifications: currentUser.notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
+        notif.id === notificationId ? { ...notif, read: true } : notif,
       ),
     });
   };
 
-  const unreadNotificationCount = currentUser?.notifications?.filter((notif) => !notif.read).length || 0;
+  const unreadNotificationCount =
+    currentUser?.notifications?.filter((notif) => !notif.read).length || 0;
 
   const getVisibleLeads = () => {
     if (!currentUser) return [];
@@ -151,13 +182,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return leads.filter((lead) => lead.clusterId === currentUser.clusterId);
     } else if (currentUser.role === "AGENT") {
       const freelancerIds = teamMembers
-        .filter((member) => member.role === "FREELANCER" && member.creatorId === currentUser.id)
+        .filter(
+          (member) =>
+            member.role === "FREELANCER" && member.creatorId === currentUser.id,
+        )
         .map((member) => member.id);
       return leads.filter(
         (lead) =>
           lead.createdBy === currentUser.id ||
           lead.assignedTo === currentUser.id ||
-          (lead.freelancerId && freelancerIds.includes(lead.freelancerId))
+          (lead.freelancerId && freelancerIds.includes(lead.freelancerId)),
       );
     } else if (currentUser.role === "FREELANCER") {
       return leads.filter((lead) => lead.createdBy === currentUser.id);
@@ -170,7 +204,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setLeads(await leadsApi.getAll());
   };
 
-  const addLead = async (lead: Omit<Lead, "id" | "createdBy" | "createdByName" | "createdByRole" | "assignedDate" | "clusterId">) => {
+  const addLead = async (
+    lead: Omit<
+      Lead,
+      | "id"
+      | "createdBy"
+      | "createdByName"
+      | "createdByRole"
+      | "assignedDate"
+      | "clusterId"
+    >,
+  ) => {
     await leadsApi.create(lead);
     setLeads(await leadsApi.getAll());
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -10,15 +10,18 @@ import { cn } from "./ui/utils";
 
 interface LoginProps {
   onLogin?: (email: string, password: string) => Promise<void> | void;
-  onSwitchToSignup: () => void;
 }
 
-export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
+export function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; api?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    api?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
@@ -26,7 +29,8 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
     if (!email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
     if (!password) newErrors.password = "Password is required";
-    else if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    else if (password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -80,7 +84,8 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (errors.email) setErrors({ ...errors, email: undefined });
+                    if (errors.email)
+                      setErrors({ ...errors, email: undefined });
                   }}
                 />
               </div>
@@ -99,11 +104,15 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className={cn("pl-10 pr-10", errors.password && "border-red-500")}
+                  className={cn(
+                    "pl-10 pr-10",
+                    errors.password && "border-red-500",
+                  )}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    if (errors.password) setErrors({ ...errors, password: undefined });
+                    if (errors.password)
+                      setErrors({ ...errors, password: undefined });
                   }}
                 />
                 <button
@@ -129,12 +138,14 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
             )}
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="remember"
                   checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setRememberMe(checked as boolean)
+                  }
                 />
                 <label
                   htmlFor="remember"
@@ -145,7 +156,7 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
               </div>
               <button
                 type="button"
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
+                className="text-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
               >
                 Forgot password?
               </button>
@@ -160,20 +171,6 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
             {/* Demo credentials removed as per requirements */}
           </form>
         </Card>
-
-        {/* Sign Up Link */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <button
-              onClick={onSwitchToSignup}
-              className="text-primary hover:text-primary/80 font-medium inline-flex items-center gap-1 transition-colors"
-            >
-              Sign up
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </p>
-        </div>
       </div>
     </div>
   );
