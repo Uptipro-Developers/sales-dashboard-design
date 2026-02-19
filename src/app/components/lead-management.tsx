@@ -129,6 +129,9 @@ export function LeadManagement() {
         err.response?.data?.message || err.message || "An error occurred",
       );
     }
+  };
+
+  const handleAddAsset = (assetId: string) => {
     if (!newLeadData.assetInterests.includes(assetId)) {
       setNewLeadData({
         ...newLeadData,
@@ -168,7 +171,7 @@ export function LeadManagement() {
   const visibleLeads = leads ?? [];
   const getFilteredLeads = () => {
     if (!currentUser) return visibleLeads;
-    if (currentUser.role === "team_lead") {
+    if (currentUser.role === "TEAM_LEAD") {
       switch (activeTab) {
         case "personal":
           return visibleLeads.filter(
@@ -191,11 +194,11 @@ export function LeadManagement() {
         default:
           return visibleLeads;
       }
-    } else if (currentUser.role === "sales_agent") {
+    } else if (currentUser.role === "AGENT") {
       const freelancerIds = (teamMembers ?? [])
         .filter(
           (member) =>
-            member.role === "freelancer" && member.creatorId === currentUser.id,
+            member.role === "FREELANCER" && member.creatorId === currentUser.id,
         )
         .map((member) => member.id);
       switch (activeTab) {
@@ -247,7 +250,7 @@ export function LeadManagement() {
         <div>
           <h1>Lead Management</h1>
           <p className="text-muted-foreground">
-            {currentUser?.role === "team_lead"
+            {currentUser?.role === "TEAM_LEAD"
               ? "Manage personal leads, admin pool, and team pipeline"
               : "Create and manage your sales leads"}
           </p>
@@ -335,7 +338,7 @@ export function LeadManagement() {
                     </Select>
                   </div>
                 </div>
-                {currentUser?.role === "team_lead" && (
+                {currentUser?.role === "TEAM_LEAD" && (
                   <div className="space-y-2">
                     <Label htmlFor="assign-agent">
                       Assign to Agent (Optional)
@@ -609,7 +612,7 @@ export function LeadManagement() {
                     </p>
                   )}
                 </div>
-                {currentUser?.role === "team_lead" && !lead.assignedTo && (
+                {currentUser?.role === "TEAM_LEAD" && !lead.assignedTo && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -655,7 +658,7 @@ export function LeadManagement() {
                   <p className="text-sm text-muted-foreground">{lead.notes}</p>
                 )}
                 <div className="flex items-center gap-2 ml-auto">
-                  {currentUser?.role === "team_lead" && lead.assignedToName && (
+                  {currentUser?.role === "TEAM_LEAD" && lead.assignedToName && (
                     <Badge
                       variant="outline"
                       className="bg-blue-500/10 text-blue-500"
@@ -680,7 +683,7 @@ export function LeadManagement() {
                     <Eye className="w-4 h-4 mr-2" />
                     View Details
                   </Button>
-                  {currentUser?.role === "sales_agent" && (
+                  {currentUser?.role === "AGENT" && (
                     <Select
                       value={lead.status}
                       onValueChange={(value) =>
@@ -698,7 +701,7 @@ export function LeadManagement() {
                       </SelectContent>
                     </Select>
                   )}
-                  {currentUser?.role === "team_lead" && (
+                  {currentUser?.role === "TEAM_LEAD" && (
                     <Badge
                       variant="outline"
                       className="bg-primary/10 text-primary"
@@ -714,7 +717,7 @@ export function LeadManagement() {
       </div>
 
       {/* Assign Lead Modal (Team Lead Only) */}
-      {currentUser?.role === "team_lead" && (
+      {currentUser?.role === "TEAM_LEAD" && (
         <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
           <DialogContent>
             <DialogHeader>
