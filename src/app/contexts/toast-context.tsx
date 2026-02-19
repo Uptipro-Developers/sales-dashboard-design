@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { Toaster } from "../components/ui/toast";
+import { Toast as ToastComponent, Toaster } from "../components/ui/toast";
 
 type Toast = {
   id: string;
@@ -7,6 +7,7 @@ type Toast = {
   description?: string;
   variant?: "default" | "success" | "error" | "warning";
   duration?: number;
+  onClose?: (id: string) => void;
 };
 
 type ToastContextType = {
@@ -54,7 +55,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, success, error, warning }}>
       {children}
-      <Toaster toasts={toasts} onClose={removeToast} />
+      <Toaster
+        toasts={toasts.map((t) => ({ ...t, onClose: removeToast }))}
+        onClose={removeToast}
+      />
     </ToastContext.Provider>
   );
 }
