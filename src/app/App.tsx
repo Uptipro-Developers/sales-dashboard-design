@@ -31,6 +31,7 @@ import { FreelancerManagement } from "./components/freelancer-management";
 import { ProfileSettings } from "./components/profile-settings";
 import { Performance } from "./components/performance";
 import { HelpSupport } from "./components/help-support";
+import { PaymentCallback } from "./components/payment-callback";
 import { Login } from "./components/login";
 import { Signup, SignupData } from "./components/signup";
 import { Sidebar } from "./components/sidebar";
@@ -144,6 +145,7 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
             <Route path="profile" element={<ProfileSettings />} />
             <Route path="performance" element={<Performance />} />
             <Route path="help" element={<HelpSupport />} />
+            <Route path="payments/callback" element={<PaymentCallback />} />
             <Route path="*" element={<DashboardOverview />} />
           </Routes>
         </main>
