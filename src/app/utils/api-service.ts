@@ -6,12 +6,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
   headers: { "Content-Type": "application/json" },
 });
 
 const refreshClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -143,6 +143,29 @@ export const transactionsApi = {
       headers: { "Content-Type": "multipart/form-data" },
     })).data;
   },
+};
+
+// ============================================
+// Payments API
+// ============================================
+export const paymentsApi = {
+  getProviders: () => api.get('/payments/providers'),
+
+  initialize: (data: {
+    provider: 'paystack' | 'flutterwave';
+    email: string;
+    amount: number;
+    currency?: string;
+    callbackUrl?: string;
+    reference?: string;
+    metadata?: Record<string, any>;
+    title?: string;
+  }) => api.post('/payments/initialize', data),
+
+  verify: (provider: 'paystack' | 'flutterwave', reference: string) =>
+    api.get('/payments/verify', {
+      params: { provider, reference },
+    }),
 };
 
 // TRANSACTION COMMISSIONS (Paid/Unpaid)
