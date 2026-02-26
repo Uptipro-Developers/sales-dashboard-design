@@ -1,11 +1,41 @@
 "use client";
 
-import { CheckCircle2, Clock, AlertTriangle, Calendar, DollarSign } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { PaymentPlan, Installment } from "../types/payment";
-import { formatNaira, calculatePaymentProgress, updateInstallmentStatuses } from "../utils/payment-calculations";
+import {
+  formatNaira,
+  calculatePaymentProgress,
+  updateInstallmentStatuses,
+} from "../utils/payment-calculations";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "./ui/select";
+import { useToast } from "../contexts/toast-context";
+import { installmentsApi } from "../utils/api-service";
+import React, { useState } from "react";
 
 interface InstallmentPaymentTrackerProps {
   paymentPlan: PaymentPlan;
@@ -43,7 +73,10 @@ const statusConfig = {
   },
 };
 
-export function InstallmentPaymentTracker({ paymentPlan, compact = false }: InstallmentPaymentTrackerProps) {
+export function InstallmentPaymentTracker({
+  paymentPlan,
+  compact = false,
+}: InstallmentPaymentTrackerProps) {
   if (paymentPlan.type === "full") {
     return (
       <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg">
@@ -52,7 +85,10 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
             <p className="text-sm text-muted-foreground mb-1">Payment Plan</p>
             <p className="font-semibold">Full Payment</p>
           </div>
-          <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
+          <Badge
+            variant="outline"
+            className="bg-accent/10 text-accent border-accent/30"
+          >
             Single Payment
           </Badge>
         </div>
@@ -60,12 +96,24 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
     );
   }
 
-  const installments = updateInstallmentStatuses(paymentPlan.installments || []);
+  const installments = updateInstallmentStatuses(
+    paymentPlan.installments || [],
+  );
   const paymentProgress = calculatePaymentProgress(installments);
-  const paidInstallments = installments.filter(i => i.status === "paid").length;
+  const paidInstallments = installments.filter(
+    (i) => i.status === "paid",
+  ).length;
   const totalPaid = installments
-    .filter(i => i.status === "paid")
+    .filter((i) => i.status === "paid")
     .reduce((sum, i) => sum + (i.paidAmount || i.amount), 0);
+
+  const { success, error } = useToast();
+  const [reminderDialogOpen, setReminderDialogOpen] = useState<string | null>(
+    null,
+  );
+  const [reminderDate, setReminderDate] = useState("");
+  const [reminderMethod, setReminderMethod] = useState("");
+  const [reminderLoading, setReminderLoading] = useState(false);
 
   if (compact) {
     return (
@@ -77,11 +125,14 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
               {paidInstallments} of {installments.length} installments paid
             </p>
           </div>
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+          <Badge
+            variant="outline"
+            className="bg-primary/10 text-primary border-primary/30"
+          >
             {paymentProgress}% Complete
           </Badge>
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Progress</span>
@@ -94,8 +145,12 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
             />
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Paid: {formatNaira(totalPaid)}</span>
-            <span className="text-muted-foreground">Total: {formatNaira(paymentPlan.totalAmount)}</span>
+            <span className="text-muted-foreground">
+              Paid: {formatNaira(totalPaid)}
+            </span>
+            <span className="text-muted-foreground">
+              Total: {formatNaira(paymentPlan.totalAmount)}
+            </span>
           </div>
         </div>
       </div>
@@ -109,7 +164,9 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Total Amount</p>
-            <p className="font-semibold">{formatNaira(paymentPlan.totalAmount)}</p>
+            <p className="font-semibold">
+              {formatNaira(paymentPlan.totalAmount)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Installments</p>
@@ -140,7 +197,9 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
 
       {/* Installment List */}
       <div className="space-y-2 max-h-80 overflow-y-auto">
-        <p className="text-sm font-medium text-muted-foreground mb-2">Installment Schedule</p>
+        <p className="text-sm font-medium text-muted-foreground mb-2">
+          Installment Schedule
+        </p>
         {installments.map((installment) => {
           const config = statusConfig[installment.status];
           const Icon = config.icon;
@@ -164,11 +223,12 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
                   {config.label}
                 </Badge>
               </div>
-              
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs mb-1">Amount</p>
-                  <p className="font-semibold">{formatNaira(installment.amount)}</p>
+                  <p className="font-semibold">
+                    {formatNaira(installment.amount)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs mb-1">Due Date</p>
@@ -176,14 +236,113 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
                 </div>
                 {installment.paidDate && (
                   <div className="col-span-2">
-                    <p className="text-muted-foreground text-xs mb-1">Paid On</p>
-                    <p className="font-semibold text-accent">{installment.paidDate}</p>
+                    <p className="text-muted-foreground text-xs mb-1">
+                      Paid On
+                    </p>
+                    <p className="font-semibold text-accent">
+                      {installment.paidDate}
+                    </p>
                   </div>
                 )}
                 {installment.paymentReference && (
                   <div className="col-span-2">
-                    <p className="text-muted-foreground text-xs mb-1">Reference</p>
-                    <p className="font-mono text-xs">{installment.paymentReference}</p>
+                    <p className="text-muted-foreground text-xs mb-1">
+                      Reference
+                    </p>
+                    <p className="font-mono text-xs">
+                      {installment.paymentReference}
+                    </p>
+                  </div>
+                )}
+                {/* Send Reminder Button for Overdue */}
+                {installment.status === "overdue" && (
+                  <div className="col-span-2 mt-2">
+                    <Dialog
+                      open={reminderDialogOpen === installment.id}
+                      onOpenChange={(open) =>
+                        setReminderDialogOpen(open ? installment.id : null)
+                      }
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Send Reminder
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Payment Reminder</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 py-2">
+                          <div>
+                            <label className="block text-xs mb-1">
+                              Reminder Date
+                            </label>
+                            <Input
+                              type="date"
+                              value={reminderDate}
+                              onChange={(e) => setReminderDate(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs mb-1">
+                              Reminder Method
+                            </label>
+                            <Select
+                              value={reminderMethod}
+                              onValueChange={setReminderMethod}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select method" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="email">Email</SelectItem>
+                                <SelectItem value="sms">Sms</SelectItem>
+                                <SelectItem value="phone">
+                                  Phone call
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setReminderDialogOpen(null)}
+                            disabled={reminderLoading}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={async () => {
+                              setReminderLoading(true);
+                              try {
+                                await installmentsApi.sendReminder({
+                                  installmentId: installment.id,
+                                  reminderDate,
+                                  method: reminderMethod,
+                                });
+                                success("Reminder sent successfully");
+                                setReminderDialogOpen(null);
+                              } catch (e: any) {
+                                error(
+                                  "Failed to send reminder",
+                                  e?.message || "Unknown error",
+                                );
+                              } finally {
+                                setReminderLoading(false);
+                              }
+                            }}
+                            disabled={
+                              !reminderDate ||
+                              !reminderMethod ||
+                              reminderLoading
+                            }
+                          >
+                            {reminderLoading ? "Sending..." : "Send Reminder"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </div>
@@ -197,11 +356,15 @@ export function InstallmentPaymentTracker({ paymentPlan, compact = false }: Inst
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground mb-1">Total Paid</p>
-            <p className="text-xl font-semibold text-accent">{formatNaira(totalPaid)}</p>
+            <p className="text-xl font-semibold text-accent">
+              {formatNaira(totalPaid)}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground mb-1">Remaining</p>
-            <p className="text-xl font-semibold">{formatNaira(paymentPlan.totalAmount - totalPaid)}</p>
+            <p className="text-xl font-semibold">
+              {formatNaira(paymentPlan.totalAmount - totalPaid)}
+            </p>
           </div>
         </div>
       </div>

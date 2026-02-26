@@ -6,12 +6,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:8080"),
   headers: { "Content-Type": "application/json" },
 });
 
 const refreshClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:8080"),
   headers: { "Content-Type": "application/json" },
 });
 
@@ -277,6 +277,12 @@ export const reportsApi = {
       params: { type, ...(dateRange ? { dateRange } : {}) },
       responseType: "blob",
     })).data,
+};
+
+// NOTIFICATIONS
+export const notificationsApi = {
+  notifyAdmin: async (data: { title: string; message: string; type?: string }) =>
+    (await api.post("/notifications/admin", data)).data,
 };
 
 export default api;

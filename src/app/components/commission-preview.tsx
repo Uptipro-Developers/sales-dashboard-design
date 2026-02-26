@@ -13,22 +13,23 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "@radix-ui/react-dialog";
+  DialogHeader,
+  DialogFooter,
+} from "./ui/dialog";
 import {
   Award,
-  Badge,
   DollarSign,
   TrendingUp,
   Clock,
   Users,
-  BarChart,
-  PieChart,
   Users2,
   CreditCard,
   CircleCheck,
   Calendar,
 } from "lucide-react";
 import {
+  BarChart,
+  PieChart,
   ResponsiveContainer,
   CartesianGrid,
   XAxis,
@@ -44,8 +45,15 @@ import {
 } from "../utils/payment-calculations";
 import { InstallmentCommissionTracker } from "./installment-commission-tracker";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { DialogHeader } from "./ui/dialog";
+
+import { Progress } from "./ui/progress";
+import {
+  Tooltip as UITooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "./ui/tooltip";
 
 const statusColors: Record<string, string> = {
   pending: "bg-warning/10 text-warning",
@@ -450,6 +458,71 @@ export function CommissionPreview() {
         </Card>
       )}
 
+      {/* Commission Progress Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Commission Progress</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Track your earned and pending commissions
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-semibold text-primary cursor-pointer">
+                    Earned
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Commission you have received</TooltipContent>
+              </UITooltip>
+              <Progress
+                value={
+                  Number(
+                    commissionSummary.earnedTotal?.replace(/[^\d]/g, ""),
+                  ) || 0
+                }
+                max={
+                  Number(
+                    commissionSummary.totalEarned?.replace(/[^\d]/g, ""),
+                  ) || 1
+                }
+                className="w-1/2"
+              />
+              <span className="text-primary font-semibold">
+                {commissionSummary.earnedTotal}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-semibold text-warning cursor-pointer">
+                    Pending
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Commission yet to be paid</TooltipContent>
+              </UITooltip>
+              <Progress
+                value={
+                  Number(commissionSummary.pending?.replace(/[^\d]/g, "")) || 0
+                }
+                max={
+                  Number(
+                    commissionSummary.totalEarned?.replace(/[^\d]/g, ""),
+                  ) || 1
+                }
+                className="w-1/2"
+                color="warning"
+              />
+              <span className="text-warning font-semibold">
+                {commissionSummary.pending}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Monthly Trend */}
@@ -497,42 +570,49 @@ export function CommissionPreview() {
             <CardHeader>
               <CardTitle>Commission Breakdown</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Lead vs Closer commission split
+                Lead vs closer commission split
               </p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={commissionBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(0)}%`
-                    }
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {commissionBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => `₦${value.toLocaleString()}`}
-                    contentStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {Array.isArray(commissionBreakdown) &&
+              commissionBreakdown.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={commissionBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
+                      }
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {commissionBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => `₦${value.toLocaleString()}`}
+                      contentStyle={{
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-muted-foreground text-center py-12">
+                  No commission breakdown data available.
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div className="p-4 bg-primary/10 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-1">
-                    Lead Commission
+                    Lead commission
                   </p>
                   <p className="font-semibold text-lg text-primary">
                     {commissionSummary.leadCommission}
@@ -540,68 +620,10 @@ export function CommissionPreview() {
                 </div>
                 <div className="p-4 bg-accent/10 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-1">
-                    Closer Commission
+                    Closer commission
                   </p>
                   <p className="font-semibold text-lg text-accent">
                     {commissionSummary.closerCommission}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Team Lead: Additional Stats */}
-        {currentUser.role === "team_lead" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Cluster Performance</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {currentUser.clusterName} - Key Metrics
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">
-                      Total Team Commission
-                    </span>
-                    <DollarSign className="w-5 h-5 text-accent" />
-                  </div>
-                  <p className="text-2xl font-semibold text-accent">
-                    ₦
-                    {teamMembers
-                      .reduce(
-                        (sum, m) => sum + m.performance.totalCommission,
-                        0,
-                      )
-                      .toLocaleString()}
-                  </p>
-                </div>
-                <div className="p-4 bg-primary/10 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">
-                      Active Team Members
-                    </span>
-                    <Users2 className="w-5 h-5 text-primary" />
-                  </div>
-                  <p className="text-2xl font-semibold text-primary">
-                    {teamMembers.length}
-                  </p>
-                </div>
-                <div className="p-4 bg-warning/10 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">
-                      Team Deals in Progress
-                    </span>
-                    <Clock className="w-5 h-5 text-warning" />
-                  </div>
-                  <p className="text-2xl font-semibold text-warning">
-                    {teamMembers.reduce(
-                      (sum, m) => sum + m.performance.dealsInProgress,
-                      0,
-                    )}
                   </p>
                 </div>
               </div>
@@ -630,7 +652,9 @@ export function CommissionPreview() {
                   .filter((deal) => deal.paymentPlan?.type === "installment")
                   .map((deal) => {
                     const earnings = calculateEarnedCommission(
-                      deal.commissionBreakdown,
+                      Array.isArray(deal.commissionBreakdown)
+                        ? deal.commissionBreakdown
+                        : [],
                     );
                     const earnedPercentage =
                       deal.commission > 0
@@ -638,7 +662,9 @@ export function CommissionPreview() {
                             (earnings.earnedTotal / deal.commission) * 100,
                           )
                         : 0;
-
+                    const validBreakdown =
+                      Array.isArray(deal.commissionBreakdown) &&
+                      deal.commissionBreakdown.length > 0;
                     return (
                       <div
                         key={deal.id}
@@ -670,9 +696,15 @@ export function CommissionPreview() {
                                   {deal.leadName}
                                 </DialogDescription>
                               </DialogHeader>
-                              <InstallmentCommissionTracker
-                                commissionBreakdown={deal.commissionBreakdown}
-                              />
+                              {validBreakdown ? (
+                                <InstallmentCommissionTracker
+                                  commissionBreakdown={deal.commissionBreakdown}
+                                />
+                              ) : (
+                                <div className="text-muted-foreground text-center py-8">
+                                  No commission breakdown data available.
+                                </div>
+                              )}
                             </DialogContent>
                           </Dialog>
                         </div>

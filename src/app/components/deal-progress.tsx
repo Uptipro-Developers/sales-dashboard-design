@@ -30,7 +30,11 @@ import { useUser } from "../contexts/user-context";
 import { InstallmentPaymentTracker } from "./installment-payment-tracker";
 import { InstallmentCommissionTracker } from "./installment-commission-tracker";
 import { formatNaira } from "../utils/payment-calculations";
-import { paymentsApi, transactionsApi } from "../utils/api-service"; // <-- Use the correct API
+import {
+  paymentsApi,
+  transactionsApi,
+  notificationsApi,
+} from "../utils/api-service"; // <-- Use the correct API
 import {
   Select,
   SelectContent,
@@ -49,7 +53,7 @@ const statusColors: Record<string, string> = {
 
 export function DealProgress() {
   const { currentUser, teamMembers } = useUser();
-  const { error } = useToast();
+  const { error, success } = useToast();
   const [paymentLinkEmail, setPaymentLinkEmail] = useState("");
   const [paymentLinkProvider, setPaymentLinkProvider] = useState<
     "paystack" | "flutterwave"
@@ -77,10 +81,29 @@ export function DealProgress() {
         setDeals(allDeals);
       })
       .finally(() => setLoading(false));
+
+    // Poll every 20 seconds for real-time updates
+    const interval = setInterval(() => {
+      transactionsApi.getAll().then((allDeals) => {
+        setDeals(allDeals);
+      });
+    }, 20000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleNotifyAdmin = (dealId: string) => {
-    // TODO: Implement API call to notify admin
+  const handleNotifyAdmin = async (dealId: string) => {
+    const deal = deals.find((d) => d.id === dealId);
+    if (!deal) return error("Deal not found");
+    try {
+      await notificationsApi.notifyAdmin({
+        title: `Deal Ready for Closing: ${deal.propertyName || deal.id}`,
+        message: `Deal ${deal.id} is ready for admin review and closing. Please review the transaction details and initiate final paperwork/payment.`,
+        type: "deal-closing-request",
+      });
+      success("Admin notified successfully");
+    } catch (e: any) {
+      error("Failed to notify admin", e?.message || "Unknown error");
+    }
   };
 
   const handleSendPaymentLink = (dealId: string, email: string) => {
@@ -200,7 +223,9 @@ export function DealProgress() {
       )}
 
       {/* Team Deals Summary - Only show when on Team tab */}
-      {(currentUser.role === "sales_agent" || currentUser.role === "AGENT") &&
+      {(currentUser.role === "sales_agent" ||
+        currentUser.role === "AGENT" ||
+        currentUser.role === "SALES_AGENT") &&
         activeTab === "team" && (
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-6">
@@ -394,7 +419,7 @@ export function DealProgress() {
               <div className="mb-6">
                 <h4 className="font-semibold mb-3">Deal Checklist</h4>
                 <div className="space-y-2">
-                  {(deal.checklist ?? []).map((item, index) => (
+                  {(deal.checklist ?? []).map((item: any, index: number) => (
                     <div
                       key={index}
                       className={`flex items-center gap-3 p-3 rounded-lg ${
@@ -611,7 +636,9 @@ export function DealProgress() {
       {selectedDealForDetails && (
         <Dialog
           open={!!selectedDealForDetails}
-          onOpenChange={setSelectedDealForDetails}
+          onOpenChange={(open: boolean) => {
+            if (!open) setSelectedDealForDetails(null);
+          }}
         >
           <DialogContent className="max-h-[80vh] overflow-y-auto">
             <DialogHeader>

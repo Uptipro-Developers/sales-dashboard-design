@@ -327,6 +327,74 @@ export function AssetBrowser() {
               </CardContent>
             </Card>
 
+            {/* Important Dates */}
+            {(selectedAsset.constructionStart ||
+              selectedAsset.constructionEnd ||
+              selectedAsset.firstPayoutDate ||
+              selectedAsset.completionDate) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Important Dates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {selectedAsset.constructionStart && (
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Construction Start
+                        </p>
+                        <p className="font-medium text-sm">
+                          {new Date(
+                            selectedAsset.constructionStart,
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                    {selectedAsset.constructionEnd && (
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Construction End
+                        </p>
+                        <p className="font-medium text-sm">
+                          {new Date(
+                            selectedAsset.constructionEnd,
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                    {selectedAsset.completionDate &&
+                      !selectedAsset.constructionEnd && (
+                        <div className="p-3 bg-muted/30 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Expected Completion
+                          </p>
+                          <p className="font-medium text-sm">
+                            {new Date(
+                              selectedAsset.completionDate,
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                    {selectedAsset.firstPayoutDate && (
+                      <div className="p-3 bg-accent/10 border border-accent/20 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          First Payout Date
+                        </p>
+                        <p className="font-medium text-sm text-accent">
+                          {new Date(
+                            selectedAsset.firstPayoutDate,
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Leads Section */}
             {selectedAsset.leads && selectedAsset.leads.length > 0 && (
               <Card>
