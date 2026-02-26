@@ -29,10 +29,10 @@ import { LeadDetailView } from "./lead-detail-view";
 import { useToast } from "../contexts/toast-context";
 
 const statusLabels: Record<string, string> = {
-  new: "New Lead",
+  new: "New lead",
   contacted: "Contacted",
-  negotiation: "In Negotiation",
-  ready: "Ready to Buy",
+  negotiation: "In negotiation",
+  ready: "Ready to buy",
 };
 
 const statusColors: Record<string, string> = {
@@ -330,10 +330,10 @@ export function LeadManagement() {
                         <SelectValue placeholder="Select source" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="self">Self Generated</SelectItem>
+                        <SelectItem value="self">Self generated</SelectItem>
                         <SelectItem value="website">Website</SelectItem>
                         <SelectItem value="referral">Referral</SelectItem>
-                        <SelectItem value="admin">Admin Pool</SelectItem>
+                        <SelectItem value="admin">Admin pool</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -581,7 +581,15 @@ export function LeadManagement() {
                       className={sourceColors[lead.source]}
                       variant="outline"
                     >
-                      {lead.source}
+                      {lead.source === "self"
+                        ? "Self generated"
+                        : lead.source === "website"
+                          ? "Website"
+                          : lead.source === "referral"
+                            ? "Referral"
+                            : lead.source === "admin"
+                              ? "Admin pool"
+                              : lead.source}
                     </Badge>
                     {lead.freelancerName && (
                       <Badge
@@ -694,10 +702,12 @@ export function LeadManagement() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="new">New lead</SelectItem>
                         <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="negotiation">Negotiation</SelectItem>
-                        <SelectItem value="ready">Ready to Buy</SelectItem>
+                        <SelectItem value="negotiation">
+                          In negotiation
+                        </SelectItem>
+                        <SelectItem value="ready">Ready to buy</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

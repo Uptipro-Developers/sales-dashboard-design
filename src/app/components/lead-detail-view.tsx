@@ -1,8 +1,22 @@
 "use client";
 
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { leadsApi } from "../utils/api-service";
-import { ArrowLeft, User, Mail, Phone, Building, MapPin, DollarSign, Calendar, Tag, FileText, Clock, Edit, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  Building,
+  MapPin,
+  DollarSign,
+  Calendar,
+  Tag,
+  FileText,
+  Clock,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -25,10 +39,22 @@ interface LeadDetailViewProps {
 
 const statusOptions = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-800" },
-  { value: "contacted", label: "Contacted", color: "bg-yellow-100 text-yellow-800" },
-  { value: "qualified", label: "Qualified", color: "bg-green-100 text-green-800" },
+  {
+    value: "contacted",
+    label: "Contacted",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  {
+    value: "qualified",
+    label: "Qualified",
+    color: "bg-green-100 text-green-800",
+  },
   { value: "lost", label: "Lost", color: "bg-red-100 text-red-800" },
-  { value: "converted", label: "Converted", color: "bg-purple-100 text-purple-800" },
+  {
+    value: "converted",
+    label: "Converted",
+    color: "bg-purple-100 text-purple-800",
+  },
 ];
 
 const priorityOptions = [
@@ -62,8 +88,12 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
   if (!leadData) return <div>Loading lead details...</div>;
 
   const { currentUser, teamMembers, clusters } = useUser();
-  const currentStatus = statusOptions.find((s: { value: any; }) => s.value === leadData.status);
-  const currentPriority = priorityOptions.find((p: { value: any; }) => p.value === leadData.priority);
+  const currentStatus = statusOptions.find(
+    (s: { value: any }) => s.value === leadData.status,
+  );
+  const currentPriority = priorityOptions.find(
+    (p: { value: any }) => p.value === leadData.priority,
+  );
 
   return (
     <div className="space-y-6">
@@ -106,9 +136,7 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
               <Button variant="outline" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
-                Save Changes
-              </Button>
+              <Button onClick={handleSave}>Save Changes</Button>
             </>
           )}
         </div>
@@ -132,7 +160,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       <Input
                         id="lead-name"
                         value={leadData.name}
-                        onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+                        onChange={(e) =>
+                          setLeadData({ ...leadData, name: e.target.value })
+                        }
                       />
                     ) : (
                       <span>{leadData.name}</span>
@@ -148,7 +178,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                         id="lead-email"
                         type="email"
                         value={leadData.email}
-                        onChange={(e) => setLeadData({ ...leadData, email: e.target.value })}
+                        onChange={(e) =>
+                          setLeadData({ ...leadData, email: e.target.value })
+                        }
                       />
                     ) : (
                       <span>{leadData.email}</span>
@@ -163,7 +195,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       <Input
                         id="lead-phone"
                         value={leadData.phone}
-                        onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setLeadData({ ...leadData, phone: e.target.value })
+                        }
                       />
                     ) : (
                       <span>{leadData.phone}</span>
@@ -178,7 +212,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       <Input
                         id="lead-company"
                         value={leadData.company}
-                        onChange={(e) => setLeadData({ ...leadData, company: e.target.value })}
+                        onChange={(e) =>
+                          setLeadData({ ...leadData, company: e.target.value })
+                        }
                       />
                     ) : (
                       <span>{leadData.company}</span>
@@ -202,7 +238,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                     <Building className="w-4 h-4 text-muted-foreground" />
                     <span>{leadData.assetInterest}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground ml-6">ID: {leadData.assetId}</p>
+                  <p className="text-sm text-muted-foreground ml-6">
+                    ID: {leadData.assetId}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lead-budget">Budget</Label>
@@ -212,10 +250,14 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       <Input
                         id="lead-budget"
                         value={leadData.budget}
-                        onChange={(e) => setLeadData({ ...leadData, budget: e.target.value })}
+                        onChange={(e) =>
+                          setLeadData({ ...leadData, budget: e.target.value })
+                        }
                       />
                     ) : (
-                      <span className="text-accent font-semibold">{leadData.budget}</span>
+                      <span className="text-accent font-semibold">
+                        {leadData.budget}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -236,10 +278,14 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                     id="lead-notes"
                     rows={4}
                     value={leadData.notes}
-                    onChange={(e) => setLeadData({ ...leadData, notes: e.target.value })}
+                    onChange={(e) =>
+                      setLeadData({ ...leadData, notes: e.target.value })
+                    }
                   />
                 ) : (
-                  <p className="text-sm p-3 bg-muted/30 rounded-lg">{leadData.notes}</p>
+                  <p className="text-sm p-3 bg-muted/30 rounded-lg">
+                    {leadData.notes}
+                  </p>
                 )}
               </div>
 
@@ -250,26 +296,127 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                   <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                     <div className="w-2 h-2 rounded-full bg-accent mt-2" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Status updated to "Contacted"</p>
-                      <p className="text-xs text-muted-foreground">2 days ago • by {leadData.assignedAgent}</p>
+                      <p className="text-sm font-medium">
+                        Status updated to "Contacted"
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        2 days ago • by {leadData.assignedAgent}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                     <div className="w-2 h-2 rounded-full bg-primary mt-2" />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Initial contact made via email</p>
-                      <p className="text-xs text-muted-foreground">3 days ago • by {leadData.assignedAgent}</p>
+                      <p className="text-sm font-medium">
+                        Initial contact made via email
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        3 days ago • by {leadData.assignedAgent}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                     <div className="w-2 h-2 rounded-full bg-muted-foreground mt-2" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">Lead created</p>
-                      <p className="text-xs text-muted-foreground">5 days ago • by {leadData.assignedAgent}</p>
+                      <p className="text-xs text-muted-foreground">
+                        5 days ago • by {leadData.assignedAgent}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Schedule */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                Payment Schedule
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {leadData.paymentPlan &&
+              leadData.paymentPlan.installments?.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-4 p-3 bg-muted/30 rounded-lg text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs">
+                        Total Amount
+                      </p>
+                      <p className="font-semibold">
+                        ₦
+                        {leadData.paymentPlan.totalAmount?.toLocaleString() ??
+                          "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Paid</p>
+                      <p className="font-semibold text-accent">
+                        ₦
+                        {leadData.paymentPlan.paidAmount?.toLocaleString() ??
+                          "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Remaining</p>
+                      <p className="font-semibold text-destructive">
+                        ₦
+                        {leadData.paymentPlan.remainingAmount?.toLocaleString() ??
+                          "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-border rounded-lg border overflow-hidden">
+                    <div className="grid grid-cols-4 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+                      <span>#</span>
+                      <span>Due Date</span>
+                      <span>Amount</span>
+                      <span>Status</span>
+                    </div>
+                    {leadData.paymentPlan.installments.map(
+                      (inst: any, idx: number) => (
+                        <div
+                          key={inst.id ?? idx}
+                          className="grid grid-cols-4 px-3 py-2 text-sm items-center"
+                        >
+                          <span className="text-muted-foreground">
+                            {idx + 1}
+                          </span>
+                          <span>
+                            {inst.dueDate
+                              ? new Date(inst.dueDate).toLocaleDateString()
+                              : "—"}
+                          </span>
+                          <span>₦{inst.amount?.toLocaleString() ?? "—"}</span>
+                          <span>
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                inst.status === "paid"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                  : inst.status === "overdue"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                              }`}
+                            >
+                              {inst.status ?? "pending"}
+                            </span>
+                          </span>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">
+                    No payment schedule linked to this lead.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -287,21 +434,58 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 {isEditing ? (
                   <Select
                     value={leadData.status}
-                    onValueChange={(value) => setLeadData({ ...leadData, status: value })}
+                    onValueChange={(value) =>
+                      setLeadData({ ...leadData, status: value })
+                    }
                   >
                     <SelectTrigger id="lead-status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      {statusOptions.map(
+                        (option: {
+                          value: Key | null | undefined;
+                          label:
+                            | string
+                            | number
+                            | bigint
+                            | boolean
+                            | ReactElement<
+                                unknown,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | Promise<
+                                | string
+                                | number
+                                | bigint
+                                | boolean
+                                | ReactPortal
+                                | ReactElement<
+                                    unknown,
+                                    string | JSXElementConstructor<any>
+                                  >
+                                | Iterable<ReactNode>
+                                | null
+                                | undefined
+                              >
+                            | null
+                            | undefined;
+                        }) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Badge className={currentStatus?.color + " w-full justify-center py-2"}>
+                  <Badge
+                    className={
+                      currentStatus?.color + " w-full justify-center py-2"
+                    }
+                  >
                     {currentStatus?.label}
                   </Badge>
                 )}
@@ -312,21 +496,58 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 {isEditing ? (
                   <Select
                     value={leadData.priority}
-                    onValueChange={(value) => setLeadData({ ...leadData, priority: value })}
+                    onValueChange={(value) =>
+                      setLeadData({ ...leadData, priority: value })
+                    }
                   >
                     <SelectTrigger id="lead-priority">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {priorityOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      {priorityOptions.map(
+                        (option: {
+                          value: Key | null | undefined;
+                          label:
+                            | string
+                            | number
+                            | bigint
+                            | boolean
+                            | ReactElement<
+                                unknown,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | Promise<
+                                | string
+                                | number
+                                | bigint
+                                | boolean
+                                | ReactPortal
+                                | ReactElement<
+                                    unknown,
+                                    string | JSXElementConstructor<any>
+                                  >
+                                | Iterable<ReactNode>
+                                | null
+                                | undefined
+                              >
+                            | null
+                            | undefined;
+                        }) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Badge className={currentPriority?.color + " w-full justify-center py-2"}>
+                  <Badge
+                    className={
+                      currentPriority?.color + " w-full justify-center py-2"
+                    }
+                  >
                     {currentPriority?.label} Priority
                   </Badge>
                 )}
@@ -337,23 +558,62 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 {isEditing ? (
                   <Select
                     value={leadData.source}
-                    onValueChange={(value) => setLeadData({ ...leadData, source: value })}
+                    onValueChange={(value) =>
+                      setLeadData({ ...leadData, source: value })
+                    }
                   >
                     <SelectTrigger id="lead-source">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {sourceOptions.map((option: { value: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      {sourceOptions.map(
+                        (option: {
+                          value: Key | null | undefined;
+                          label:
+                            | string
+                            | number
+                            | bigint
+                            | boolean
+                            | ReactElement<
+                                unknown,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | Promise<
+                                | string
+                                | number
+                                | bigint
+                                | boolean
+                                | ReactPortal
+                                | ReactElement<
+                                    unknown,
+                                    string | JSXElementConstructor<any>
+                                  >
+                                | Iterable<ReactNode>
+                                | null
+                                | undefined
+                              >
+                            | null
+                            | undefined;
+                        }) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 ) : (
                   <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                     <Tag className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{sourceOptions.find((s: { value: any; }) => s.value === leadData.source)?.label}</span>
+                    <span className="text-sm">
+                      {
+                        sourceOptions.find(
+                          (s: { value: any }) => s.value === leadData.source,
+                        )?.label
+                      }
+                    </span>
                   </div>
                 )}
               </div>
@@ -404,7 +664,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 <Label>Created Date</Label>
                 <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{new Date(leadData.createdDate).toLocaleDateString()}</span>
+                  <span className="text-sm">
+                    {new Date(leadData.createdDate).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
 
@@ -412,7 +674,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 <Label>Last Contact</Label>
                 <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{new Date(leadData.lastContact).toLocaleDateString()}</span>
+                  <span className="text-sm">
+                    {new Date(leadData.lastContact).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
 
@@ -423,12 +687,16 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                     id="next-followup"
                     type="date"
                     value={leadData.nextFollowUp}
-                    onChange={(e) => setLeadData({ ...leadData, nextFollowUp: e.target.value })}
+                    onChange={(e) =>
+                      setLeadData({ ...leadData, nextFollowUp: e.target.value })
+                    }
                   />
                 ) : (
                   <div className="flex items-center gap-2 p-2 bg-accent/10 border border-accent/20 rounded">
                     <Calendar className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-medium">{new Date(leadData.nextFollowUp).toLocaleDateString()}</span>
+                    <span className="text-sm font-medium">
+                      {new Date(leadData.nextFollowUp).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
