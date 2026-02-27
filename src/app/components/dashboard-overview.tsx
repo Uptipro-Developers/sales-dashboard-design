@@ -50,22 +50,34 @@ export function DashboardOverview() {
   const [performanceData, setPerformanceData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Team-wide stats for Team Leads
+  // Personal stats derived from currentUser's agentProfile
+  const agentProfile = (currentUser as any)?.agentProfile;
+  const personalStats = {
+    personalLeads: agentProfile?.assignedLeads?.length ?? 0,
+    personalDealsCompleted: agentProfile?.closedDeals ?? 0,
+    personalDealsInProgress:
+      agentProfile?.leadTransactions?.filter(
+        (tx: any) => tx.status !== "COMPLETED",
+      ).length ?? 0,
+    personalCommission: agentProfile?.totalCommission ?? 0,
+  };
+
+  // Team-wide stats for Team Leads — agents from context have: activeDeals, closedDeals, totalCommission
   const teamStats = {
     totalLeads: teamMembers.reduce(
-      (sum, m) => sum + (m.performance?.leadsAssigned || 0),
+      (sum, m: any) => sum + (m.activeDeals || 0),
       0,
     ),
     totalDealsCompleted: teamMembers.reduce(
-      (sum, m) => sum + (m.performance?.dealsCompleted || 0),
+      (sum, m: any) => sum + (m.closedDeals || 0),
       0,
     ),
     totalDealsInProgress: teamMembers.reduce(
-      (sum, m) => sum + (m.performance?.dealsInProgress || 0),
+      (sum, m: any) => sum + (m.activeDeals || 0),
       0,
     ),
     totalCommission: teamMembers.reduce(
-      (sum, m) => sum + (m.performance?.totalCommission || 0),
+      (sum, m: any) => sum + (m.totalCommission || 0),
       0,
     ),
   };
@@ -123,7 +135,7 @@ export function DashboardOverview() {
                       Personal Active Leads
                     </p>
                     <p className="text-3xl font-semibold text-primary">
-                      {performanceData?.personalLeads || 0}
+                      {personalStats.personalLeads}
                     </p>
                     <p className="text-sm text-accent mt-2">+3 this week</p>
                   </div>
@@ -142,7 +154,7 @@ export function DashboardOverview() {
                       My Deals Completed
                     </p>
                     <p className="text-3xl font-semibold text-accent">
-                      {performanceData?.personalDealsCompleted || 0}
+                      {personalStats.personalDealsCompleted}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       This month
@@ -163,7 +175,7 @@ export function DashboardOverview() {
                       My Deals in Progress
                     </p>
                     <p className="text-3xl font-semibold text-primary">
-                      {performanceData?.personalDealsInProgress || 0}
+                      {personalStats.personalDealsInProgress}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Active pipeline
@@ -184,10 +196,7 @@ export function DashboardOverview() {
                       My Sales Commission
                     </p>
                     <p className="text-3xl font-semibold text-accent">
-                      ₦
-                      {(
-                        performanceData?.personalCommission || 0
-                      ).toLocaleString()}
+                      ₦{personalStats.personalCommission.toLocaleString()}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Personal earnings

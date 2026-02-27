@@ -162,7 +162,9 @@ export function AssetBrowser() {
           </Button>
           <div className="flex-1">
             <h1>{selectedAsset.title || selectedAsset.name}</h1>
-            <p className="text-muted-foreground">{selectedAsset.id}</p>
+            <p className="text-muted-foreground">
+              {selectedAsset.serialId || selectedAsset.id}
+            </p>
           </div>
         </div>
 
@@ -872,7 +874,7 @@ export function AssetBrowser() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground mb-1">
-                        {asset.id}
+                        {asset.serialId || asset.id}
                       </p>
                       <h3 className="font-semibold group-hover:text-primary transition-colors">
                         {asset.title || asset.name}
@@ -966,7 +968,9 @@ export function AssetBrowser() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <Badge variant="outline">{asset.id}</Badge>
+                            <Badge variant="outline">
+                              {asset.serialId || asset.id}
+                            </Badge>
                             <h3 className="font-semibold group-hover:text-primary transition-colors">
                               {asset.title || asset.name}
                             </h3>

@@ -212,37 +212,6 @@ export function FreelancerManagement() {
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="freelancer-cluster">Assign to Cluster</Label>
-                <Select
-                  value={newFreelancerData.clusterId}
-                  onValueChange={(value) =>
-                    setNewFreelancerData({
-                      ...newFreelancerData,
-                      clusterId: value,
-                    })
-                  }
-                  disabled={currentUser?.role === "AGENT"}
-                >
-                  <SelectTrigger id="freelancer-cluster">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clusters.map((cluster) => (
-                      <SelectItem key={cluster.id} value={cluster.id}>
-                        {cluster.name}
-                        {cluster.id === currentUser.clusterId &&
-                          " (Your Cluster)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {currentUser?.role === "AGENT" && (
-                  <p className="text-xs text-muted-foreground">
-                    Agents automatically assign freelancers to their own cluster
-                  </p>
-                )}
-              </div>
 
               {/* Commission Sharing Configuration */}
               <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg space-y-4">

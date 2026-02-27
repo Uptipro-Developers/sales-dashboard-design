@@ -5,7 +5,7 @@ import {
   reportsApi,
   transactionCommissionsApi,
   userApi,
-  teamApi,
+  clustersApi,
 } from "../utils/api-service";
 import {
   Dialog,
@@ -91,11 +91,32 @@ export function CommissionPreview() {
       transactionCommissionsApi.getUnpaid(),
     ])
       .then(async ([user, reportData, paid, unpaid]) => {
-        setCurrentUser(user);
-        // If user is a team lead, fetch team members
-        if (user.role === "team_lead" && user.teamId) {
-          const team = await teamApi.getById(user.teamId);
-          setTeamMembers(team.members || []);
+        // Normalize role to lowercase for consistent comparisons
+        const normalizedUser = { ...user, role: user.role?.toLowerCase() };
+        setCurrentUser(normalizedUser);
+        // If user is a team lead, fetch team members via their cluster
+        const clusterId =
+          user.agentProfile?.clusterId || user.agentProfile?.cluster?.id;
+        if (user.role?.toUpperCase() === "TEAM_LEAD" && clusterId) {
+          try {
+            const cluster = await clustersApi.getById(clusterId);
+            const members = (cluster.agents || []).map((agent: any) => ({
+              id: agent.id,
+              name: agent.user?.name || "Unknown",
+              email: agent.user?.email || "",
+              role: agent.user?.role?.toLowerCase() || "agent",
+              totalCommission: agent.totalCommission || 0,
+              closedDeals: agent.closedDeals || 0,
+              activeDeals: agent.activeDeals || 0,
+              performance:
+                agent.closedDeals > 0
+                  ? Math.min(100, Math.round((agent.closedDeals / 10) * 100))
+                  : 0,
+            }));
+            setTeamMembers(members);
+          } catch {
+            setTeamMembers([]);
+          }
         } else {
           setTeamMembers([]);
         }
@@ -111,7 +132,7 @@ export function CommissionPreview() {
 
   // Calculate Team Lead Bonus (5% of total team commission)
   const totalTeamCommission = teamMembers.reduce(
-    (sum, m) => sum + (m.performance?.totalCommission || 0),
+    (sum, m) => sum + (m.totalCommission || 0),
     0,
   );
   const teamLeadBonus = Math.round(totalTeamCommission * 0.05);
@@ -125,13 +146,13 @@ export function CommissionPreview() {
   const freelancerCommissionData =
     currentUser.role === "freelancer" && currentUser.commissionSharing
       ? {
-          totalCommission: currentUser.performance.totalCommission,
+          totalCommission: currentUser.agentProfile?.totalCommission || 0,
           freelancerShare: Math.round(
-            currentUser.performance.totalCommission *
+            (currentUser.agentProfile?.totalCommission || 0) *
               (currentUser.commissionSharing.freelancerPercentage / 100),
           ),
           creatorShare: Math.round(
-            currentUser.performance.totalCommission *
+            (currentUser.agentProfile?.totalCommission || 0) *
               (currentUser.commissionSharing.creatorPercentage / 100),
           ),
         }
@@ -398,7 +419,7 @@ export function CommissionPreview() {
             <div className="space-y-3">
               {teamMembers.map((member) => {
                 const memberBonus = Math.round(
-                  member.performance.totalCommission * 0.05,
+                  (member.totalCommission || 0) * 0.05,
                 );
                 return (
                   <div
@@ -417,7 +438,7 @@ export function CommissionPreview() {
                           Agent Commission
                         </p>
                         <p className="text-xl font-semibold text-accent">
-                          ₦{member.performance.totalCommission.toLocaleString()}
+                          ₦{(member.totalCommission || 0).toLocaleString()}
                         </p>
                         <p className="text-xs text-primary">
                           Your bonus: ₦{memberBonus.toLocaleString()}
@@ -430,7 +451,7 @@ export function CommissionPreview() {
                           Deals Completed
                         </p>
                         <p className="font-semibold">
-                          {member.performance.dealsCompleted}
+                          {member.closedDeals || 0}
                         </p>
                       </div>
                       <div className="p-2 bg-card rounded">
@@ -438,7 +459,7 @@ export function CommissionPreview() {
                           In Progress
                         </p>
                         <p className="font-semibold">
-                          {member.performance.dealsInProgress}
+                          {member.activeDeals || 0}
                         </p>
                       </div>
                       <div className="p-2 bg-card rounded">
@@ -446,7 +467,7 @@ export function CommissionPreview() {
                           Active Leads
                         </p>
                         <p className="font-semibold">
-                          {member.performance.leadsAssigned}
+                          {member.activeDeals || 0}
                         </p>
                       </div>
                     </div>
@@ -674,7 +695,9 @@ export function CommissionPreview() {
                           <div>
                             <div className="flex items-center gap-2 mb-2">
                               <h4 className="font-semibold">{deal.leadName}</h4>
-                              <Badge variant="outline">{deal.id}</Badge>
+                              <Badge variant="outline">
+                                {deal.serialId || deal.id}
+                              </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">
                               {deal.asset}
@@ -802,7 +825,9 @@ export function CommissionPreview() {
                           <h4 className="font-semibold">
                             {commission.leadName}
                           </h4>
-                          <Badge variant="outline">{commission.id}</Badge>
+                          <Badge variant="outline">
+                            {commission.serialId || commission.id}
+                          </Badge>
                           <Badge className={statusColors[commission.status]}>
                             {commission.status}
                           </Badge>

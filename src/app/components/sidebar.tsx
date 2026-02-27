@@ -205,7 +205,7 @@ export function Sidebar() {
             </div>
           </div>
           <div className="text-xs text-muted-foreground space-y-0.5 pl-10">
-            <p>ID: {currentUser.id}</p>
+            <p>ID: {currentUser.serialId || currentUser.id}</p>
             <p>
               Cluster:{" "}
               {currentUser.agentProfile?.cluster?.name ||
