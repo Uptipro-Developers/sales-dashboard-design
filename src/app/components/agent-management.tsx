@@ -193,28 +193,6 @@ export function AgentManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="agent-cluster">Assign to Cluster</Label>
-                <Select
-                  value={newAgentData.clusterId}
-                  onValueChange={(value) =>
-                    setNewAgentData({ ...newAgentData, clusterId: value })
-                  }
-                >
-                  <SelectTrigger id="agent-cluster">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clusters.map((cluster) => (
-                      <SelectItem key={cluster.id} value={cluster.id}>
-                        {cluster.name}
-                        {cluster.id === currentUser?.clusterId &&
-                          " (Your Cluster)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
                 <p className="text-muted-foreground">
                   <strong>Note:</strong> The agent will receive an invitation

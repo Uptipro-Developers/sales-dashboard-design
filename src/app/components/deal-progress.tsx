@@ -96,8 +96,8 @@ export function DealProgress() {
     if (!deal) return error("Deal not found");
     try {
       await notificationsApi.notifyAdmin({
-        title: `Deal Ready for Closing: ${deal.propertyName || deal.id}`,
-        message: `Deal ${deal.id} is ready for admin review and closing. Please review the transaction details and initiate final paperwork/payment.`,
+        title: `Deal Ready for Closing: ${deal.propertyName || deal.serialId || deal.id}`,
+        message: `Deal ${deal.serialId || deal.id} is ready for admin review and closing. Please review the transaction details and initiate final paperwork/payment.`,
         type: "deal-closing-request",
       });
       success("Admin notified successfully");
@@ -285,7 +285,7 @@ export function DealProgress() {
                 <div>
                   <CardTitle className="flex items-center gap-3">
                     {deal.leadName}
-                    <Badge variant="outline">{deal.id}</Badge>
+                    <Badge variant="outline">{deal.serialId || deal.id}</Badge>
                     {currentUser.role === "AGENT" && activeTab === "team" && (
                       <Badge
                         variant="outline"

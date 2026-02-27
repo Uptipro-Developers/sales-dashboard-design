@@ -38,7 +38,8 @@ interface LeadDetailViewProps {
 }
 
 const statusOptions = [
-  { value: "new", label: "New", color: "bg-blue-100 text-blue-800" },
+  { value: "pending", label: "Pending", color: "bg-gray-100 text-gray-800" },
+  { value: "assigned", label: "Assigned", color: "bg-blue-100 text-blue-800" },
   {
     value: "contacted",
     label: "Contacted",
@@ -49,18 +50,18 @@ const statusOptions = [
     label: "Qualified",
     color: "bg-green-100 text-green-800",
   },
+  {
+    value: "available",
+    label: "Available",
+    color: "bg-cyan-100 text-cyan-800",
+  },
   { value: "lost", label: "Lost", color: "bg-red-100 text-red-800" },
   {
     value: "converted",
     label: "Converted",
     color: "bg-purple-100 text-purple-800",
   },
-];
-
-const priorityOptions = [
-  { value: "high", label: "High", color: "bg-red-100 text-red-800" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
-  { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
+  { value: "new", label: "New", color: "bg-indigo-100 text-indigo-800" },
 ];
 
 const sourceOptions = [
@@ -91,9 +92,6 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
   const currentStatus = statusOptions.find(
     (s: { value: any }) => s.value === leadData.status,
   );
-  const currentPriority = priorityOptions.find(
-    (p: { value: any }) => p.value === leadData.priority,
-  );
 
   return (
     <div className="space-y-6">
@@ -107,16 +105,20 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
           <div>
             <div className="flex items-center gap-3">
               <h1>{leadData.name}</h1>
-              <Badge variant="outline">{leadData.id}</Badge>
-              <Badge className={currentStatus?.color}>
-                {currentStatus?.label}
+              <Badge variant="outline">
+                {leadData.serialId || leadData.id}
               </Badge>
-              <Badge className={currentPriority?.color}>
-                {currentPriority?.label} Priority
+              <Badge
+                className={currentStatus?.color || "bg-gray-100 text-gray-800"}
+              >
+                {currentStatus?.label || leadData.status || "Unknown"}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Created on {new Date(leadData.createdDate).toLocaleDateString()}
+              Created on{" "}
+              {new Date(
+                leadData.createdAt || leadData.dateReceived,
+              ).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -236,19 +238,29 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                   <Label>Asset of Interest</Label>
                   <div className="flex items-center gap-2">
                     <Building className="w-4 h-4 text-muted-foreground" />
-                    <span>{leadData.assetInterest}</span>
+                    <span>
+                      {leadData.asset?.name || leadData.assetInterest || "—"}
+                    </span>
                   </div>
-                  <p className="text-sm text-muted-foreground ml-6">
-                    ID: {leadData.assetId}
-                  </p>
+                  {(leadData.asset || leadData.assetInterest) && (
+                    <p className="text-sm text-muted-foreground ml-6">
+                      ID:{" "}
+                      {leadData.asset?.serialId ||
+                        leadData.asset?.id ||
+                        leadData.assetInterest}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lead-budget">Budget</Label>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground font-medium text-sm">
+                      ₦
+                    </span>
                     {isEditing ? (
                       <Input
                         id="lead-budget"
+                        type="number"
                         value={leadData.budget}
                         onChange={(e) =>
                           setLeadData({ ...leadData, budget: e.target.value })
@@ -256,7 +268,9 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       />
                     ) : (
                       <span className="text-accent font-semibold">
-                        {leadData.budget}
+                        {leadData.budget
+                          ? `₦${Number(leadData.budget).toLocaleString()}`
+                          : "—"}
                       </span>
                     )}
                   </div>
@@ -483,72 +497,11 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 ) : (
                   <Badge
                     className={
-                      currentStatus?.color + " w-full justify-center py-2"
+                      (currentStatus?.color || "bg-gray-100 text-gray-800") +
+                      " w-full justify-center py-2"
                     }
                   >
-                    {currentStatus?.label}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lead-priority">Priority</Label>
-                {isEditing ? (
-                  <Select
-                    value={leadData.priority}
-                    onValueChange={(value) =>
-                      setLeadData({ ...leadData, priority: value })
-                    }
-                  >
-                    <SelectTrigger id="lead-priority">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priorityOptions.map(
-                        (option: {
-                          value: Key | null | undefined;
-                          label:
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | ReactElement<
-                                unknown,
-                                string | JSXElementConstructor<any>
-                              >
-                            | Iterable<ReactNode>
-                            | ReactPortal
-                            | Promise<
-                                | string
-                                | number
-                                | bigint
-                                | boolean
-                                | ReactPortal
-                                | ReactElement<
-                                    unknown,
-                                    string | JSXElementConstructor<any>
-                                  >
-                                | Iterable<ReactNode>
-                                | null
-                                | undefined
-                              >
-                            | null
-                            | undefined;
-                        }) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Badge
-                    className={
-                      currentPriority?.color + " w-full justify-center py-2"
-                    }
-                  >
-                    {currentPriority?.label} Priority
+                    {currentStatus?.label || leadData.status || "Unknown"}
                   </Badge>
                 )}
               </div>
@@ -665,68 +618,30 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                 <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {new Date(leadData.createdDate).toLocaleDateString()}
+                    {leadData.createdAt || leadData.dateReceived
+                      ? new Date(
+                          leadData.createdAt || leadData.dateReceived,
+                        ).toLocaleDateString()
+                      : "—"}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Last Contact</Label>
+                <Label>Last Updated</Label>
                 <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {new Date(leadData.lastContact).toLocaleDateString()}
+                    {leadData.updatedAt
+                      ? new Date(leadData.updatedAt).toLocaleDateString()
+                      : "—"}
                   </span>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="next-followup">Next Follow-up</Label>
-                {isEditing ? (
-                  <Input
-                    id="next-followup"
-                    type="date"
-                    value={leadData.nextFollowUp}
-                    onChange={(e) =>
-                      setLeadData({ ...leadData, nextFollowUp: e.target.value })
-                    }
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 p-2 bg-accent/10 border border-accent/20 rounded">
-                    <Calendar className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-medium">
-                      {new Date(leadData.nextFollowUp).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                <Mail className="w-4 h-4 mr-2" />
-                Send Email
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Phone className="w-4 h-4 mr-2" />
-                Call Lead
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Meeting
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <FileText className="w-4 h-4 mr-2" />
-                View Documents
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Quick Actions - hidden for now, will be enabled later */}
         </div>
       </div>
     </div>
