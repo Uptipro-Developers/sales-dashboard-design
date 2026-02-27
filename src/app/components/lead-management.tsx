@@ -238,7 +238,7 @@ export function LeadManagement() {
     (lead) => lead.createdBy?.id !== currentUser?.id && lead.source !== "admin",
   ).length;
   const assignedCount = visibleLeads.filter(
-    (lead) => lead.assignedTo?.id === currentUser?.id,
+    (lead) => lead.assignedTo?.userId === currentUser?.id,
   ).length;
   const freelancerCount = visibleLeads.filter(
     (lead) => lead.freelancerId,
@@ -394,7 +394,7 @@ export function LeadManagement() {
                             variant="outline"
                             className="bg-primary/10 text-primary"
                           >
-                            {assetId} - {asset?.name}
+                            {asset?.name || assetId}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -611,7 +611,10 @@ export function LeadManagement() {
                     </div>
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
-                      Assigned: {lead.assignedDate}
+                      Received:{" "}
+                      {lead.dateReceived
+                        ? new Date(lead.dateReceived).toLocaleDateString()
+                        : "—"}
                     </div>
                   </div>
                   {lead.company && (
@@ -666,21 +669,22 @@ export function LeadManagement() {
                   <p className="text-sm text-muted-foreground">{lead.notes}</p>
                 )}
                 <div className="flex items-center gap-2 ml-auto">
-                  {currentUser?.role === "TEAM_LEAD" && lead.assignedToName && (
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-500/10 text-blue-500"
-                    >
-                      Assigned to: {lead.assignedToName}
-                    </Badge>
-                  )}
-                  {lead.createdByName &&
-                    lead.createdByName !== currentUser?.name && (
+                  {currentUser?.role === "TEAM_LEAD" &&
+                    lead.assignedTo?.user?.name && (
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-500/10 text-blue-500"
+                      >
+                        Assigned to: {lead.assignedTo.user.name}
+                      </Badge>
+                    )}
+                  {lead.createdBy?.name &&
+                    lead.createdBy.name !== currentUser?.name && (
                       <Badge
                         variant="outline"
                         className="bg-green-500/10 text-green-500"
                       >
-                        Created by: {lead.createdByName}
+                        Created by: {lead.createdBy.name}
                       </Badge>
                     )}
                   <Button
@@ -741,10 +745,12 @@ export function LeadManagement() {
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <p className="font-medium">{selectedLead.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {selectedLead.asset}
+                    {selectedLead.asset?.name || "—"}
                   </p>
                   <p className="text-sm text-accent font-semibold">
-                    {selectedLead.value}
+                    {selectedLead.budget
+                      ? `₦${Number(selectedLead.budget).toLocaleString()}`
+                      : "—"}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -759,8 +765,8 @@ export function LeadManagement() {
                     <SelectContent>
                       {(teamMembers ?? []).map((member) => (
                         <SelectItem key={member.id} value={member.id}>
-                          {member.name} • {member.performance.leadsAssigned}{" "}
-                          leads • {member.performance.dealsInProgress} active
+                          {member.name} • {(member as any).activeDeals ?? 0}{" "}
+                          active
                         </SelectItem>
                       ))}
                     </SelectContent>
