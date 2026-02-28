@@ -285,4 +285,19 @@ export const notificationsApi = {
     (await api.post("/notifications/admin", data)).data,
 };
 
+/**
+ * Resolves a media URL so it works regardless of where it was stored.
+ * Replaces localhost origin with the configured VITE_API_URL.
+ */
+export const resolveMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  const apiBase = (((import.meta as any).env?.VITE_API_URL) || 'http://localhost:8080').replace(/\/$/, '');
+  if (url.startsWith(apiBase)) return url;
+  if (url.startsWith('/')) return `${apiBase}${url}`;
+  if (/^https?:\/\/localhost(:\d+)?/.test(url)) {
+    return url.replace(/^https?:\/\/localhost(:\d+)?/, apiBase);
+  }
+  return url;
+};
+
 export default api;

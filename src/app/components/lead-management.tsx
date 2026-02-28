@@ -658,7 +658,12 @@ export function LeadManagement() {
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Budget</p>
                     <p className="font-semibold text-lg text-accent">
-                      ₦{lead.budget ? lead.budget.toLocaleString() : "0"}
+                      ₦
+                      {lead.budget
+                        ? Number(
+                            String(lead.budget).replace(/[₦,]/g, ""),
+                          ).toLocaleString()
+                        : "0"}
                     </p>
                   </div>
                 </div>
@@ -749,7 +754,7 @@ export function LeadManagement() {
                   </p>
                   <p className="text-sm text-accent font-semibold">
                     {selectedLead.budget
-                      ? `₦${Number(selectedLead.budget).toLocaleString()}`
+                      ? `₦${Number(String(selectedLead.budget).replace(/[₦,]/g, "")).toLocaleString()}`
                       : "—"}
                   </p>
                 </div>

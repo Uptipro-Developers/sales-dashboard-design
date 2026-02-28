@@ -318,10 +318,10 @@ export function DashboardOverview() {
                     Leads Assigned
                   </p>
                   <p className="text-3xl font-semibold">
-                    {currentUser.performance.leadsAssigned}
+                    {personalStats.personalLeads}
                   </p>
-                  <p className="text-sm text-accent mt-2">
-                    +12% from last month
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Active leads
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -336,10 +336,31 @@ export function DashboardOverview() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
+                    Deals Completed
+                  </p>
+                  <p className="text-3xl font-semibold text-accent">
+                    {personalStats.personalDealsCompleted}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This month
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <CircleCheck className="w-6 h-6 text-accent" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
                     Deals in Progress
                   </p>
                   <p className="text-3xl font-semibold text-warning">
-                    {currentUser.performance.dealsInProgress}
+                    {personalStats.personalDealsInProgress}
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     Active pipeline
@@ -359,9 +380,14 @@ export function DashboardOverview() {
                   <p className="text-sm text-muted-foreground mb-1">
                     Potential Commission
                   </p>
-                  <p className="text-3xl font-semibold text-accent">₦28,400</p>
-                  <p className="text-sm text-accent mt-2">
-                    +18% from last month
+                  <p className="text-3xl font-semibold text-accent">
+                    ₦
+                    {(
+                      (agentProfile?.totalCommission ?? 0) * 1.05
+                    ).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    From active deals
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -379,12 +405,10 @@ export function DashboardOverview() {
                     Earned Commission
                   </p>
                   <p className="text-3xl font-semibold text-accent">
-                    ₦{currentUser.performance.totalCommission.toLocaleString()}
+                    ₦{personalStats.personalCommission.toLocaleString()}
                   </p>
-                  <p className="text-sm text-accent mt-2">
-                    +₦
-                    {currentUser.performance.thisMonthCommission.toLocaleString()}{" "}
-                    this month
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Total earned
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
