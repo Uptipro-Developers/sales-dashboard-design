@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { assetsApi } from "../utils/api-service";
+import { assetsApi, resolveMediaUrl } from "../utils/api-service";
 import {
   Search,
   Grid2x2,
@@ -673,7 +673,7 @@ export function AssetBrowser() {
                         }}
                       >
                         <img
-                          src={img.url}
+                          src={resolveMediaUrl(img.url)}
                           alt={img.caption || "Property image"}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
@@ -730,7 +730,7 @@ export function AssetBrowser() {
                     {selectedAsset.documents.map((doc: any) => (
                       <a
                         key={doc.id}
-                        href={doc.url}
+                        href={resolveMediaUrl(doc.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 p-3 bg-muted rounded hover:bg-muted/80 transition-colors group"
@@ -1046,7 +1046,7 @@ export function AssetBrowser() {
           </DialogHeader>
           <div className="relative w-full">
             <img
-              src={selectedImage?.url}
+              src={resolveMediaUrl(selectedImage?.url)}
               alt={selectedImage?.caption || "Property image"}
               className="w-full h-auto max-h-[70vh] object-contain rounded"
             />
