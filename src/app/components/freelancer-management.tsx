@@ -404,7 +404,7 @@ export function FreelancerManagement() {
       </Card>
 
       {/* Cluster Freelancers (Team Leads Only) */}
-      {currentUser.role === "AGENT" && (
+      {currentUser.role === "TEAM_LEAD" && (
         <Card>
           <CardHeader>
             <CardTitle>

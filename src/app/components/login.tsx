@@ -58,9 +58,11 @@ export function Login({ onLogin }: LoginProps) {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent mb-4">
-            <span className="text-2xl font-bold text-white">BO</span>
-          </div>
+          <img
+            src="/logo.svg"
+            alt="BuyOps"
+            className="h-14 w-auto mx-auto mb-4"
+          />
           <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">
             Sign in to your BuyOps Sales Dashboard

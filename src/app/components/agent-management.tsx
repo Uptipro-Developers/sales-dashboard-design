@@ -297,20 +297,24 @@ export function AgentManagement() {
                   <p className="text-xs text-muted-foreground mb-1">
                     Leads Assigned
                   </p>
-                  <p className="text-xl font-semibold">{member.activeDeals}</p>
+                  <p className="text-xl font-semibold">
+                    {(member.activeDeals ?? 0) + (member.closedDeals ?? 0)}
+                  </p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg">
                   <p className="text-xs text-muted-foreground mb-1">
                     In Progress
                   </p>
-                  <p className="text-xl font-semibold">{member.activeDeals}</p>
+                  <p className="text-xl font-semibold">
+                    {member.activeDeals ?? 0}
+                  </p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg">
                   <p className="text-xs text-muted-foreground mb-1">
                     Completed
                   </p>
                   <p className="text-xl font-semibold text-accent">
-                    {member.closedDeals}
+                    {member.closedDeals ?? 0}
                   </p>
                 </div>
                 <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
@@ -318,7 +322,7 @@ export function AgentManagement() {
                     Total Commission
                   </p>
                   <p className="text-xl font-semibold text-accent">
-                    ${member.totalCommission.toLocaleString()}
+                    ₦{(member.totalCommission ?? 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -447,9 +451,9 @@ export function AgentManagement() {
                 Total Team Commission
               </p>
               <p className="text-2xl font-semibold text-accent">
-                $
+                ₦
                 {teamMembers
-                  .reduce((sum, m) => sum + m.totalCommission, 0)
+                  .reduce((sum, m) => sum + (m.totalCommission ?? 0), 0)
                   .toLocaleString()}
               </p>
             </div>
