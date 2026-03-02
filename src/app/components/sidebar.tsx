@@ -97,18 +97,8 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm">
-            <span className="text-primary-foreground font-bold text-lg">
-              BO
-            </span>
-          </div>
-          <div>
-            <h1 className="font-bold text-foreground">BuyOps</h1>
-            <p className="text-xs text-muted-foreground">Sales Dashboard</p>
-          </div>
-        </div>
+      <div className="px-6 py-5 border-b border-border">
+        <img src="/logo.svg" alt="BuyOps Sales" className="h-9 w-auto" />
       </div>
 
       {/* Navigation */}

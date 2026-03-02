@@ -10,6 +10,7 @@ import {
   Home,
   Plus,
   Search,
+  TrendingUp,
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -41,6 +42,7 @@ export function TopBar({
     switchRole,
     markNotificationAsRead,
     unreadNotificationCount,
+    leads,
   } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
@@ -128,7 +130,16 @@ export function TopBar({
   const performance = currentUser?.performance || {
     thisMonthCommission: 0,
     totalCommission: 0,
+    dealsInProgress: 0,
   };
+
+  // Pipeline value: sum of active/in-progress leads created by or assigned to current user
+  const pipelineValue = (leads ?? []).reduce((sum, lead) => {
+    const isMyLead =
+      lead.createdBy === currentUser?.id || lead.assignedTo === currentUser?.id;
+    const isActive = lead.status !== "completed" && lead.status !== "lost";
+    return isMyLead && isActive ? sum + (lead.value ?? 0) : sum;
+  }, 0);
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
@@ -168,6 +179,16 @@ export function TopBar({
             <p className="font-semibold text-foreground text-sm">
               ₦{performance.totalCommission?.toLocaleString?.() ?? "0"}
             </p>
+          </div>
+          <div className="w-px h-8 bg-accent/20" />
+          <div className="text-right flex items-start gap-1">
+            <TrendingUp className="w-3.5 h-3.5 text-primary mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground">Potential</p>
+              <p className="font-semibold text-primary text-sm">
+                ₦{pipelineValue.toLocaleString()}
+              </p>
+            </div>
           </div>
         </div>
 
