@@ -180,13 +180,19 @@ export function AssetBrowser() {
           <TabsContent value="overview" className="space-y-6">
             {/* Hero Image */}
             <Card className="overflow-hidden">
-              <div className="h-80 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 flex items-center justify-center">
-                <div className="text-center">
-                  <TypeIcon className="w-24 h-24 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Property Image Preview
-                  </p>
-                </div>
+              <div className="h-80 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 flex items-center justify-center relative">
+                {selectedAsset.images?.length > 0 ? (
+                  <img
+                    src={resolveMediaUrl(selectedAsset.images[0].url)}
+                    alt={selectedAsset.title || selectedAsset.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <TypeIcon className="w-24 h-24 text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">No images available</p>
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -421,7 +427,12 @@ export function AssetBrowser() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">
-                            Budget: ₦{lead.budget?.toLocaleString() || "-"}
+                            Budget: ₦
+                            {lead.budget
+                              ? Number(
+                                  String(lead.budget).replace(/[₦,]/g, ""),
+                                ).toLocaleString()
+                              : "-"}
                           </span>
                           <span className="text-muted-foreground">
                             Source: {lead.source || "-"}
