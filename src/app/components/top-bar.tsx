@@ -11,7 +11,10 @@ import {
   Plus,
   Search,
   TrendingUp,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "./theme-provider";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -46,6 +49,7 @@ export function TopBar({
   } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const roleLabels = {
     TEAM_LEAD: "Team Lead",
@@ -192,6 +196,22 @@ export function TopBar({
           </div>
         </div>
 
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          title={
+            theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+          }
+        >
+          {theme === "light" ? (
+            <Moon className="w-5 h-5" />
+          ) : (
+            <Sun className="w-5 h-5" />
+          )}
+        </Button>
+
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -257,7 +277,7 @@ export function TopBar({
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2 hover:bg-slate-100 hover:text-slate-900"
+              className="flex items-center gap-2 hover:bg-muted hover:text-foreground"
             >
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <User className="w-4 h-4 text-primary-foreground" />
