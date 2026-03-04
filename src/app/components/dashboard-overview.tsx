@@ -44,6 +44,11 @@ const statusLabels: Record<string, string> = {
 export function DashboardOverview() {
   const { currentUser, teamMembers } = useUser();
 
+  // Normalize role for case-insensitive comparison (API returns uppercase: "TEAM_LEAD", "AGENT")
+  const userRole = (currentUser?.role as string)?.toUpperCase();
+  const isTeamLead = userRole === "TEAM_LEAD";
+  const isAgent = userRole === "AGENT" || userRole === "SALES_AGENT";
+
   // API state
   const [funnelData, setFunnelData] = useState<any[]>([]);
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
@@ -113,14 +118,14 @@ export function DashboardOverview() {
       <div>
         <h1>Sales Dashboard</h1>
         <p className="text-muted-foreground">
-          {currentUser.role === "team_lead"
+          {isTeamLead
             ? "Your personal sales performance and team overview"
             : "Track your performance and sales metrics"}
         </p>
       </div>
 
       {/* Team Lead: Personal Sales Section */}
-      {currentUser.role === "team_lead" && (
+      {isTeamLead && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
@@ -213,7 +218,7 @@ export function DashboardOverview() {
       )}
 
       {/* Team Lead: Team Overview Section */}
-      {currentUser.role === "team_lead" && (
+      {isTeamLead && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Users2 className="w-5 h-5 text-primary" />
@@ -308,7 +313,7 @@ export function DashboardOverview() {
       )}
 
       {/* Sales Agent: Personal Stats */}
-      {currentUser.role === "sales_agent" && (
+      {isAgent && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
@@ -426,9 +431,7 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle>Sales Funnel</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentUser.role === "team_lead"
-                ? "Team pipeline stages"
-                : "Current pipeline stages"}
+              {isTeamLead ? "Team pipeline stages" : "Current pipeline stages"}
             </p>
           </CardHeader>
           <CardContent>
@@ -472,7 +475,7 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle>Recent Leads</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {currentUser.role === "team_lead"
+              {isTeamLead
                 ? "Latest cluster leads"
                 : "Your latest assigned leads"}
             </p>
@@ -506,7 +509,12 @@ export function DashboardOverview() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
-                      Budget: ₦{lead.budget?.toLocaleString() || "-"}
+                      Budget: ₦
+                      {lead.budget
+                        ? Number(
+                            String(lead.budget).replace(/[₦,]/g, ""),
+                          ).toLocaleString()
+                        : "-"}
                     </span>
                     <span className="font-semibold text-accent">
                       Source: {lead.source || "-"}
