@@ -98,7 +98,11 @@ export function Sidebar() {
     <aside className="w-64 bg-card border-r border-border flex flex-col">
       {/* Header */}
       <div className="px-6 py-5 border-b border-border">
-        <img src="/logo.svg" alt="BuyOps Sales" className="h-9 w-auto" />
+        <img
+          src="/logo.svg"
+          alt="BuyOps Sales"
+          className="h-9 w-auto dark:brightness-0 dark:invert"
+        />
       </div>
 
       {/* Navigation */}

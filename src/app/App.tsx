@@ -39,6 +39,7 @@ import { TopBar } from "./components/top-bar";
 import { UserProvider, useUser, User, UserRole } from "./contexts/user-context";
 import { ToastProvider } from "./contexts/toast-context";
 import { authApi, signupApi } from "./utils/api-service";
+import { ThemeProvider } from "./components/theme-provider";
 
 type NavItem =
   | "overview"
@@ -222,31 +223,33 @@ export default function App() {
 
   // Show main app if authenticated
   return (
-    <Router>
-      <ToastProvider>
-        <UserProvider>
-          <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route
-              path="/signup"
-              element={
-                <Signup
-                  onSignup={handleSignup}
-                  onSwitchToLogin={() => setAuthView("login")}
-                />
-              }
-            />
-            <Route
-              path="/*"
-              element={
-                <PrivateRoute>
-                  <AppContent onLogout={handleLogout} />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </UserProvider>
-      </ToastProvider>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <ToastProvider>
+          <UserProvider>
+            <Routes>
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route
+                path="/signup"
+                element={
+                  <Signup
+                    onSignup={handleSignup}
+                    onSwitchToLogin={() => setAuthView("login")}
+                  />
+                }
+              />
+              <Route
+                path="/*"
+                element={
+                  <PrivateRoute>
+                    <AppContent onLogout={handleLogout} />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </UserProvider>
+        </ToastProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
