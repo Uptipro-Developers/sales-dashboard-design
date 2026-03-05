@@ -149,160 +149,162 @@ export function FreelancerManagement() {
             {currentCluster?.name}
           </p>
         </div>
-        <Dialog
-          open={isAddFreelancerModalOpen}
-          onOpenChange={setIsAddFreelancerModalOpen}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Freelancer
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Freelancer</DialogTitle>
-              <DialogDescription>
-                Create a new freelancer account with commission sharing
-                agreement
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="freelancer-name">Full Name</Label>
-                <Input
-                  id="freelancer-name"
-                  placeholder="John Doe"
-                  value={newFreelancerData.name}
-                  onChange={(e) =>
-                    setNewFreelancerData({
-                      ...newFreelancerData,
-                      name: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="freelancer-email">Email Address</Label>
-                <Input
-                  id="freelancer-email"
-                  type="email"
-                  placeholder="john.doe@buyops.com"
-                  value={newFreelancerData.email}
-                  onChange={(e) =>
-                    setNewFreelancerData({
-                      ...newFreelancerData,
-                      email: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="freelancer-password">Password</Label>
-                <Input
-                  id="freelancer-password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={newFreelancerData.password}
-                  onChange={(e) =>
-                    setNewFreelancerData({
-                      ...newFreelancerData,
-                      password: e.target.value,
-                    })
-                  }
-                />
-              </div>
+        {currentUser?.role !== "FREELANCER" && (
+          <Dialog
+            open={isAddFreelancerModalOpen}
+            onOpenChange={setIsAddFreelancerModalOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Freelancer
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New Freelancer</DialogTitle>
+                <DialogDescription>
+                  Create a new freelancer account with commission sharing
+                  agreement
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="freelancer-name">Full Name</Label>
+                  <Input
+                    id="freelancer-name"
+                    placeholder="John Doe"
+                    value={newFreelancerData.name}
+                    onChange={(e) =>
+                      setNewFreelancerData({
+                        ...newFreelancerData,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="freelancer-email">Email Address</Label>
+                  <Input
+                    id="freelancer-email"
+                    type="email"
+                    placeholder="john.doe@buyops.com"
+                    value={newFreelancerData.email}
+                    onChange={(e) =>
+                      setNewFreelancerData({
+                        ...newFreelancerData,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="freelancer-password">Password</Label>
+                  <Input
+                    id="freelancer-password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={newFreelancerData.password}
+                    onChange={(e) =>
+                      setNewFreelancerData({
+                        ...newFreelancerData,
+                        password: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-              {/* Commission Sharing Configuration */}
-              <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg space-y-4">
-                <h4 className="font-medium flex items-center gap-2">
-                  <Percent className="w-4 h-4" />
-                  Commission Sharing Agreement
-                </h4>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="freelancer-percentage">
-                      Freelancer's Commission Share (%)
-                    </Label>
-                    <Input
-                      id="freelancer-percentage"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newFreelancerData.freelancerPercentage}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        // Allow empty string for editing
-                        if (inputValue === "") {
+                {/* Commission Sharing Configuration */}
+                <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg space-y-4">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Percent className="w-4 h-4" />
+                    Commission Sharing Agreement
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="freelancer-percentage">
+                        Freelancer's Commission Share (%)
+                      </Label>
+                      <Input
+                        id="freelancer-percentage"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={newFreelancerData.freelancerPercentage}
+                        onChange={(e) => {
+                          const inputValue = e.target.value;
+                          // Allow empty string for editing
+                          if (inputValue === "") {
+                            setNewFreelancerData({
+                              ...newFreelancerData,
+                              freelancerPercentage: 0,
+                              creatorPercentage: 100,
+                            });
+                            return;
+                          }
+                          const value = parseInt(inputValue) || 0;
                           setNewFreelancerData({
                             ...newFreelancerData,
-                            freelancerPercentage: 0,
-                            creatorPercentage: 100,
+                            freelancerPercentage: Math.min(
+                              100,
+                              Math.max(0, value),
+                            ),
+                            creatorPercentage:
+                              100 - Math.min(100, Math.max(0, value)),
                           });
-                          return;
-                        }
-                        const value = parseInt(inputValue) || 0;
-                        setNewFreelancerData({
-                          ...newFreelancerData,
-                          freelancerPercentage: Math.min(
-                            100,
-                            Math.max(0, value),
-                          ),
-                          creatorPercentage:
-                            100 - Math.min(100, Math.max(0, value)),
-                        });
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="creator-percentage">
-                      Your Commission Share (%)
-                    </Label>
-                    <Input
-                      id="creator-percentage"
-                      type="number"
-                      disabled
-                      value={newFreelancerData.creatorPercentage}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Total must equal 100%. Adjust the freelancer's percentage
-                    and yours will auto-calculate.
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="creator-percentage">
+                        Your Commission Share (%)
+                      </Label>
+                      <Input
+                        id="creator-percentage"
+                        type="number"
+                        disabled
+                        value={newFreelancerData.creatorPercentage}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Total must equal 100%. Adjust the freelancer's percentage
+                      and yours will auto-calculate.
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
-                <p className="text-muted-foreground">
-                  <strong>Note:</strong> The freelancer will receive an
-                  invitation email with login credentials. They can create leads
-                  and close deals, with commissions automatically split based on
-                  the agreement above.
-                </p>
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
+                  <p className="text-muted-foreground">
+                    <strong>Note:</strong> The freelancer will receive an
+                    invitation email with login credentials. They can create
+                    leads and close deals, with commissions automatically split
+                    based on the agreement above.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddFreelancerModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddFreelancer}
+                    disabled={
+                      !newFreelancerData.name ||
+                      !newFreelancerData.email ||
+                      newFreelancerData.freelancerPercentage +
+                        newFreelancerData.creatorPercentage !==
+                        100
+                    }
+                  >
+                    Create Freelancer
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAddFreelancerModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAddFreelancer}
-                  disabled={
-                    !newFreelancerData.name ||
-                    !newFreelancerData.email ||
-                    newFreelancerData.freelancerPercentage +
-                      newFreelancerData.creatorPercentage !==
-                      100
-                  }
-                >
-                  Create Freelancer
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* My Freelancers */}
