@@ -135,89 +135,95 @@ export function AgentManagement() {
             {currentCluster?.name}
           </p>
         </div>
-        <Dialog
-          open={isAddAgentModalOpen}
-          onOpenChange={setIsAddAgentModalOpen}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Agent
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Agent</DialogTitle>
-              <DialogDescription>
-                Create a new sales agent account for your team
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="agent-name">Full Name</Label>
-                <Input
-                  id="agent-name"
-                  placeholder="John Doe"
-                  value={newAgentData.name}
-                  onChange={(e) =>
-                    setNewAgentData({ ...newAgentData, name: e.target.value })
-                  }
-                />
+        {currentUser?.role === "TEAM_LEAD" && (
+          <Dialog
+            open={isAddAgentModalOpen}
+            onOpenChange={setIsAddAgentModalOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Agent
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New Agent</DialogTitle>
+                <DialogDescription>
+                  Create a new sales agent account for your team
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="agent-name">Full Name</Label>
+                  <Input
+                    id="agent-name"
+                    placeholder="John Doe"
+                    value={newAgentData.name}
+                    onChange={(e) =>
+                      setNewAgentData({ ...newAgentData, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="agent-email">Email Address</Label>
+                  <Input
+                    id="agent-email"
+                    type="email"
+                    placeholder="john.doe@buyops.com"
+                    value={newAgentData.email}
+                    onChange={(e) =>
+                      setNewAgentData({
+                        ...newAgentData,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="agent-role">Role</Label>
+                  <Select
+                    value={newAgentData.role}
+                    onValueChange={(value) =>
+                      setNewAgentData({ ...newAgentData, role: value })
+                    }
+                  >
+                    <SelectTrigger id="agent-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AGENT">Sales Agent</SelectItem>
+                      <SelectItem value="TEAM_LEAD">Team Lead</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
+                  <p className="text-muted-foreground">
+                    <strong>Note:</strong> The agent will receive an invitation
+                    email with login credentials and onboarding instructions.
+                    Default cluster is set to your cluster (
+                    {currentCluster?.name}
+                    ).
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddAgentModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddAgent}
+                    disabled={!newAgentData.name || !newAgentData.email}
+                  >
+                    Create Agent
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="agent-email">Email Address</Label>
-                <Input
-                  id="agent-email"
-                  type="email"
-                  placeholder="john.doe@buyops.com"
-                  value={newAgentData.email}
-                  onChange={(e) =>
-                    setNewAgentData({ ...newAgentData, email: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="agent-role">Role</Label>
-                <Select
-                  value={newAgentData.role}
-                  onValueChange={(value) =>
-                    setNewAgentData({ ...newAgentData, role: value })
-                  }
-                >
-                  <SelectTrigger id="agent-role">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AGENT">Sales Agent</SelectItem>
-                    <SelectItem value="TEAM_LEAD">Team Lead</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
-                <p className="text-muted-foreground">
-                  <strong>Note:</strong> The agent will receive an invitation
-                  email with login credentials and onboarding instructions.
-                  Default cluster is set to your cluster ({currentCluster?.name}
-                  ).
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAddAgentModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAddAgent}
-                  disabled={!newAgentData.name || !newAgentData.email}
-                >
-                  Create Agent
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Team Members List */}

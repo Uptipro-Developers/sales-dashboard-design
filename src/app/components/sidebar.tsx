@@ -67,6 +67,18 @@ export function Sidebar() {
     ADMIN: "Admin",
   };
 
+  // Role-based nav filtering
+  const role = (currentUser?.role as string)?.toUpperCase();
+  const isTeamLead = role === "TEAM_LEAD";
+  const isAgent = role === "AGENT";
+
+  const managementItems: NavItem[] = [
+    ...(isTeamLead ? [{ id: "agents", label: "Agents", icon: UserCog }] : []),
+    ...(isTeamLead || isAgent
+      ? [{ id: "freelancers", label: "Freelancers", icon: Briefcase }]
+      : []),
+  ];
+
   // Sidebar groups as requested
   const navGroups: NavGroup[] = [
     {
@@ -79,14 +91,15 @@ export function Sidebar() {
         { id: "deals", label: "Deals", icon: TrendingUp },
       ],
     },
-    {
-      id: "management",
-      label: "Management",
-      items: [
-        { id: "agents", label: "Agents", icon: UserCog },
-        { id: "freelancers", label: "Freelancers", icon: Briefcase },
-      ],
-    },
+    ...(managementItems.length > 0
+      ? [
+          {
+            id: "management",
+            label: "Management",
+            items: managementItems,
+          },
+        ]
+      : []),
     {
       id: "earnings",
       label: "Earnings",
