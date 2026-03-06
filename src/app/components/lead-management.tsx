@@ -167,8 +167,34 @@ export function LeadManagement() {
   if (selectedLeadId)
     return <LeadDetailView leadId={selectedLeadId} onBack={handleBackToList} />;
 
-  // Filtering logic
-  const visibleLeads = leads ?? [];
+  // Filtering logic — scope base list to what this role should see
+  const visibleLeads = (() => {
+    const all = leads ?? [];
+    if (!currentUser) return all;
+    const role = (currentUser.role as string)?.toUpperCase();
+    if (role === "TEAM_LEAD") {
+      return all.filter(
+        (l) =>
+          l.clusterId === currentUser.clusterId ||
+          l.assignedTo?.clusterId === currentUser.clusterId,
+      );
+    } else if (role === "AGENT" || role === "SALES_AGENT") {
+      const freelancerIds = (teamMembers ?? [])
+        .filter(
+          (m) => m.role === "FREELANCER" && m.creatorId === currentUser.id,
+        )
+        .map((m) => m.id);
+      return all.filter(
+        (l) =>
+          l.createdBy?.id === currentUser.id ||
+          l.assignedTo?.id === currentUser.id ||
+          (l.freelancerId && freelancerIds.includes(l.freelancerId)),
+      );
+    } else if (role === "FREELANCER") {
+      return all.filter((l) => l.createdBy?.id === currentUser.id);
+    }
+    return all;
+  })();
   const getFilteredLeads = () => {
     if (!currentUser) return visibleLeads;
     if (currentUser.role === "TEAM_LEAD") {

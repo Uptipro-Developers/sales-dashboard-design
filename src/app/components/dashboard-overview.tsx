@@ -25,8 +25,6 @@ import {
 } from "recharts";
 import { useUser } from "../contexts/user-context";
 import { reportsApi } from "../utils/api-service";
-import { leadsApi } from "../utils/api-service";
-
 const statusColors: Record<string, string> = {
   new: "bg-muted text-muted-foreground",
   contacted: "bg-primary/10 text-primary",
@@ -42,7 +40,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export function DashboardOverview() {
-  const { currentUser, teamMembers } = useUser();
+  const { currentUser, teamMembers, getVisibleLeads } = useUser();
 
   // Normalize role for case-insensitive comparison (API returns uppercase: "TEAM_LEAD", "AGENT")
   const userRole = (currentUser?.role as string)?.toUpperCase();
@@ -89,11 +87,9 @@ export function DashboardOverview() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
-      reportsApi.getPerformance(),
-      leadsApi.getAll({ sort: "recent", limit: 5 }),
-    ])
-      .then(([performance, leads]) => {
+    reportsApi
+      .getPerformance()
+      .then((performance) => {
         setPerformanceData(performance);
         setFunnelData(
           (performance.conversionMetrics || []).map(
@@ -106,9 +102,12 @@ export function DashboardOverview() {
             }),
           ),
         );
-        setRecentLeads(leads || []);
+        // Use role-scoped leads from context instead of fetching all
+        const myLeads = getVisibleLeads();
+        setRecentLeads(myLeads.slice(0, 5));
       })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div>Loading...</div>;

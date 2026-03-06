@@ -149,7 +149,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
         user.notifications = [];
       }
       setCurrentUser(user);
-      setTeamMembers(agents);
+
+      // Scope teamMembers to what this role should see
+      const role = (user?.role as string)?.toUpperCase();
+      let visibleAgents = agents;
+      if (role === "TEAM_LEAD") {
+        visibleAgents = agents.filter(
+          (a: any) => a.clusterId === user.clusterId,
+        );
+      } else if (role === "AGENT" || role === "SALES_AGENT") {
+        visibleAgents = agents.filter(
+          (a: any) => a.role === "FREELANCER" && a.creatorId === user.id,
+        );
+      } else if (role === "FREELANCER") {
+        visibleAgents = [];
+      }
+      setTeamMembers(visibleAgents);
+
       setClusters(clustersData);
       setLeads(leadsData);
       setLoading(false);
