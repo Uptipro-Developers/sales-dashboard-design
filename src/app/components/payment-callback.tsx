@@ -27,19 +27,16 @@ export function PaymentCallback() {
     paymentsApi
       .verify(provider as "paystack" | "flutterwave", reference)
       .then((res: any) => {
-        const status = String(
-          res?.data?.status || res?.status || "",
-        ).toLowerCase();
+        // paymentsApi.verify now returns response.data directly
+        const status = String(res?.status || "").toLowerCase();
         if (status === "success") {
           setMessage("Payment verified successfully.");
           success("Payment verified", "Checkout was completed successfully.");
         } else {
-          setMessage(
-            `Payment status: ${res?.data?.status || res?.status || "unknown"}`,
-          );
+          setMessage(`Payment status: ${res?.status || "unknown"}`);
           warning(
             "Payment status",
-            `Verification returned ${res?.data?.status || res?.status || "unknown"}.`,
+            `Verification returned ${res?.status || "unknown"}.`,
           );
         }
       })
