@@ -185,7 +185,12 @@ export function AssetBrowser() {
                   <img
                     src={resolveMediaUrl(selectedAsset.images[0].url)}
                     alt={selectedAsset.title || selectedAsset.name}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    title="Click to view full size"
+                    onClick={() => {
+                      setSelectedImage(selectedAsset.images[0]);
+                      setIsImageViewerOpen(true);
+                    }}
                   />
                 ) : (
                   <div className="text-center">
@@ -868,18 +873,38 @@ export function AssetBrowser() {
                 className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
                 onClick={() => setSelectedAsset(asset)}
               >
-                <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                  <div className="text-center">
-                    <TypeIcon className="w-12 h-12 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      {asset.type}
-                    </p>
-                  </div>
-                  <div className="absolute top-3 right-3">
+                <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
+                  {asset.images?.length > 0 ? (
+                    <img
+                      src={resolveMediaUrl(asset.images[0].url)}
+                      alt={asset.title || asset.name}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(asset.images[0]);
+                        setIsImageViewerOpen(true);
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <TypeIcon className="w-12 h-12 text-primary mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        {asset.type}
+                      </p>
+                    </div>
+                  )}
+                  <div className="absolute top-3 right-3 z-10">
                     <Badge className={statusColors[asset.status]}>
                       {asset.status}
                     </Badge>
                   </div>
+                  {asset.images?.length > 1 && (
+                    <div className="absolute bottom-2 right-2 z-10">
+                      <span className="text-xs text-white bg-black/50 px-2 py-0.5 rounded flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3" /> {asset.images.length}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
@@ -974,8 +999,25 @@ export function AssetBrowser() {
                   >
                     <div className="flex items-start justify-between gap-6">
                       <div className="flex gap-4 flex-1">
-                        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
-                          <TypeIcon className="w-8 h-8 text-primary" />
+                        <div
+                          className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (asset.images?.length > 0) {
+                              setSelectedImage(asset.images[0]);
+                              setIsImageViewerOpen(true);
+                            }
+                          }}
+                        >
+                          {asset.images?.length > 0 ? (
+                            <img
+                              src={resolveMediaUrl(asset.images[0].url)}
+                              alt={asset.title || asset.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <TypeIcon className="w-8 h-8 text-primary" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
