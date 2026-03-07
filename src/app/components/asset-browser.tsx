@@ -7,7 +7,6 @@ import {
   Grid2x2,
   List,
   MapPin,
-  DollarSign,
   Eye,
   Building2,
   Home,
@@ -33,8 +32,8 @@ import {
   Percent,
   Calendar,
   Shield,
-  Sofa,
-} from "lucide-react";
+  Sofa} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 
 // Map asset types to icon components
 const typeIcons: Record<string, React.ElementType> = {
@@ -533,7 +532,11 @@ export function AssetBrowser() {
                       </Badge>
                     </div>
                     <p className="text-2xl font-bold text-accent">
-                      {selectedAsset.commission}
+                      {selectedAsset.commission
+                        ? isNaN(Number(selectedAsset.commission))
+                          ? selectedAsset.commission
+                          : `₦${Number(selectedAsset.commission).toLocaleString()}`
+                        : "—"}
                     </p>
                   </div>
                 </CardContent>
@@ -952,18 +955,21 @@ export function AssetBrowser() {
                     </div>
                     <div className="flex items-center justify-between bg-accent/10 p-3 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-accent" />
+                        <NairaSign className="w-4 h-4 text-accent" />
                         <span className="text-sm text-muted-foreground">
                           Commission
                         </span>
                       </div>
                       <span className="font-semibold text-accent">
-                        {asset.commission ||
-                          (asset.leadCommission && asset.closerCommission
+                        {asset.commission
+                          ? isNaN(Number(asset.commission))
+                            ? asset.commission
+                            : `₦${Number(asset.commission).toLocaleString()}`
+                          : asset.leadCommission && asset.closerCommission
                             ? `${asset.leadCommission}% + ${asset.closerCommission}%`
                             : asset.commissionRate
                               ? `${asset.commissionRate}%`
-                              : "—")}
+                              : "—"}
                       </span>
                     </div>
                   </div>
@@ -1071,12 +1077,15 @@ export function AssetBrowser() {
                             Commission
                           </p>
                           <p className="text-sm font-semibold text-accent">
-                            {asset.commission ||
-                              (asset.leadCommission && asset.closerCommission
+                            {asset.commission
+                              ? isNaN(Number(asset.commission))
+                                ? asset.commission
+                                : `₦${Number(asset.commission).toLocaleString()}`
+                              : asset.leadCommission && asset.closerCommission
                                 ? `${asset.leadCommission}% + ${asset.closerCommission}%`
                                 : asset.commissionRate
                                   ? `${asset.commissionRate}%`
-                                  : "—")}
+                                  : "—"}
                           </p>
                         </div>
                       </div>

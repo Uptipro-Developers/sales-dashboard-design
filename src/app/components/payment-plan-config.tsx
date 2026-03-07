@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, DollarSign, Plus, Trash2, CreditCard } from "lucide-react";
+import { Calendar, Plus, Trash2, CreditCard } from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";

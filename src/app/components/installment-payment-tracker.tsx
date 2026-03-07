@@ -4,9 +4,8 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Calendar,
-  DollarSign,
-} from "lucide-react";
+  Calendar} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";

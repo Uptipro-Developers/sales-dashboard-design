@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -12,7 +13,6 @@ import {
   Package,
   Users,
   TrendingUp,
-  DollarSign,
   UserCog,
   Briefcase,
   Receipt,
@@ -40,6 +40,7 @@ import { UserProvider, useUser, User, UserRole } from "./contexts/user-context";
 import { ToastProvider } from "./contexts/toast-context";
 import { authApi, signupApi } from "./utils/api-service";
 import { ThemeProvider } from "./components/theme-provider";
+import { NairaSign } from "./components/NairaSign";
 
 type NavItem =
   | "overview"
@@ -77,7 +78,7 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
         { id: "assets", label: "Assets", icon: Package },
         { id: "leads", label: "Leads", icon: Users },
         { id: "deals", label: "Deals", icon: TrendingUp },
-        { id: "commission", label: "Commission", icon: DollarSign },
+        { id: "commission", label: "Commission", icon: NairaSign },
       ],
     },
     {
@@ -155,17 +156,11 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PrivateRoute({ children }: { children: JSX.Element }) {
-  const token = localStorage.getItem("access_token");
-  return token ? children : <Navigate to="/login" replace />;
-}
-
-export default function App() {
-  // Initialize from localStorage
+function AppRouter() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return !!localStorage.getItem("access_token");
   });
-  const [authView, setAuthView] = useState<"login" | "signup">("login");
+  const navigate = useNavigate();
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -175,6 +170,7 @@ export default function App() {
         localStorage.setItem("refresh_token", res.refresh_token);
       }
       setIsAuthenticated(true);
+      navigate("/", { replace: true });
     } catch (err) {
       throw err;
     }
@@ -190,6 +186,7 @@ export default function App() {
         localStorage.setItem("refresh_token", res.refresh_token);
       }
       setIsAuthenticated(true);
+      navigate("/", { replace: true });
     } catch (err) {
       throw err;
     }
@@ -200,53 +197,58 @@ export default function App() {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("remember_me");
     setIsAuthenticated(false);
+    navigate("/login", { replace: true });
   };
 
-  // Show auth screens if not authenticated
-  if (!isAuthenticated) {
-    if (authView === "login") {
-      return (
-        <Login
-          onLogin={handleLogin}
-          onSwitchToSignup={() => setAuthView("signup")}
-        />
-      );
-    } else {
-      return (
-        <Signup
-          onSignup={handleSignup}
-          onSwitchToLogin={() => setAuthView("login")}
-        />
-      );
-    }
-  }
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <Login
+              onLogin={handleLogin}
+              onSwitchToSignup={() => navigate("/signup")}
+            />
+          )
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <Signup
+              onSignup={handleSignup}
+              onSwitchToLogin={() => navigate("/login")}
+            />
+          )
+        }
+      />
+      <Route
+        path="/*"
+        element={
+          isAuthenticated ? (
+            <AppContent onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
+  );
+}
 
-  // Show main app if authenticated
+export default function App() {
   return (
     <ThemeProvider>
       <Router>
         <ToastProvider>
           <UserProvider>
-            <Routes>
-              <Route path="/login" element={<Login onLogin={handleLogin} />} />
-              <Route
-                path="/signup"
-                element={
-                  <Signup
-                    onSignup={handleSignup}
-                    onSwitchToLogin={() => setAuthView("login")}
-                  />
-                }
-              />
-              <Route
-                path="/*"
-                element={
-                  <PrivateRoute>
-                    <AppContent onLogout={handleLogout} />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
+            <AppRouter />
           </UserProvider>
         </ToastProvider>
       </Router>

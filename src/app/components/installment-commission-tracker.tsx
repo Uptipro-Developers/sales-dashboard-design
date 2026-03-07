@@ -1,6 +1,7 @@
 "use client";
 
-import { DollarSign, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import { TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { CommissionInstallment } from "../types/payment";
@@ -90,7 +91,7 @@ export function InstallmentCommissionTracker({
 
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-4 h-4 text-primary" />
+            <NairaSign className="w-4 h-4 text-primary" />
             <p className="text-sm text-muted-foreground">Total Commission</p>
           </div>
           <p className="text-2xl font-semibold text-primary">{formatNaira(totalCommission)}</p>

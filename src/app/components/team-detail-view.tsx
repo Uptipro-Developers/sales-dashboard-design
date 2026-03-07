@@ -9,11 +9,10 @@ import {
   Award,
   TrendingUp,
   Clock,
-  DollarSign,
   Target,
   BarChart3,
-  Users,
-} from "lucide-react";
+  Users} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -116,14 +115,14 @@ export function TeamDetailView({ memberId, onBack }: TeamDetailViewProps) {
                   Total Commission
                 </p>
                 <p className="text-3xl font-semibold text-accent">
-                  ${member.performance.totalCommission.toLocaleString()}
+                  ₦{member.performance.totalCommission.toLocaleString()}
                 </p>
                 <p className="text-sm text-primary mt-2">
-                  Your bonus: ${teamLeadBonus.toLocaleString()}
+                  Your bonus: ₦{teamLeadBonus.toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-accent" />
+                <NairaSign className="w-6 h-6 text-accent" />
               </div>
             </div>
           </CardContent>
@@ -354,13 +353,13 @@ export function TeamDetailView({ memberId, onBack }: TeamDetailViewProps) {
 
             <div className="p-4 bg-muted/30 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5 text-primary" />
+                <NairaSign className="w-5 h-5 text-primary" />
                 <p className="text-sm text-muted-foreground">
                   Avg Commission/Deal
                 </p>
               </div>
               <p className="text-2xl font-semibold">
-                $
+                ₦
                 {Math.round(
                   member.performance.totalCommission /
                     member.performance.dealsCompleted,
@@ -377,7 +376,7 @@ export function TeamDetailView({ memberId, onBack }: TeamDetailViewProps) {
                 <p className="text-sm text-muted-foreground">Pipeline Value</p>
               </div>
               <p className="text-2xl font-semibold">
-                ${(member.performance.dealsInProgress * 15000).toLocaleString()}
+                ₦{(member.performance.dealsInProgress * 15000).toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Estimated from active deals
