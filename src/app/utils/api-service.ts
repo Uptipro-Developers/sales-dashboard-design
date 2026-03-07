@@ -149,9 +149,10 @@ export const transactionsApi = {
 // Payments API
 // ============================================
 export const paymentsApi = {
-  getProviders: () => api.get('/payments/providers'),
+  getProviders: async () =>
+    (await api.get('/payments/providers')).data,
 
-  initialize: (data: {
+  initialize: async (data: {
     provider: 'paystack' | 'flutterwave';
     email: string;
     amount: number;
@@ -160,12 +161,12 @@ export const paymentsApi = {
     reference?: string;
     metadata?: Record<string, any>;
     title?: string;
-  }) => api.post('/payments/initialize', data),
+  }) => (await api.post('/payments/initialize', data)).data,
 
-  verify: (provider: 'paystack' | 'flutterwave', reference: string) =>
-    api.get('/payments/verify', {
+  verify: async (provider: 'paystack' | 'flutterwave', reference: string) =>
+    (await api.get('/payments/verify', {
       params: { provider, reference },
-    }),
+    })).data,
 };
 
 // TRANSACTION COMMISSIONS (Paid/Unpaid)
@@ -205,8 +206,9 @@ export const leadsApi = {
   create: async (data: any) => (await api.post("/leads", data)).data,
   update: async (id: string, data: any) => (await api.put(`/leads/${id}`, data)).data,
   delete: async (id: string) => (await api.delete(`/leads/${id}`)).data,
-  assign: async (id: string, assigneeId: string) =>
-    (await api.put(`/leads/${id}/assign`, { assigneeId })).data,
+  assign: async (id: string, assignedToId: string) =>
+    // Backend: POST /leads/:id/assign with { assignedToId }
+    (await api.post(`/leads/${id}/assign`, { assignedToId })).data,
   updateStatus: async (id: string, status: string) =>
     (await api.put(`/leads/${id}/status`, { status })).data,
 };

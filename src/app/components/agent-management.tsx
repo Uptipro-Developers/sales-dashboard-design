@@ -59,6 +59,18 @@ export function AgentManagement() {
     clusterId: "",
   });
 
+  const filterAgentsForUser = (agents: any[], user: any) => {
+    const role = (user?.role as string)?.toUpperCase();
+    if (role === "TEAM_LEAD") {
+      return agents.filter((a) => a.clusterId === user.clusterId);
+    } else if (role === "AGENT" || role === "SALES_AGENT") {
+      return agents.filter(
+        (a) => a.role === "FREELANCER" && a.creatorId === user.id,
+      );
+    }
+    return [];
+  };
+
   useEffect(() => {
     async function fetchData() {
       const [agents, clusters, user] = await Promise.all([
@@ -66,7 +78,7 @@ export function AgentManagement() {
         clustersApi.getAll(),
         userApi.getCurrent(),
       ]);
-      setTeamMembers(agents);
+      setTeamMembers(filterAgentsForUser(agents, user));
       setClusters(clusters);
       setCurrentUser(user);
     }
@@ -82,7 +94,7 @@ export function AgentManagement() {
       role: "AGENT",
       clusterId: currentUser?.clusterId,
     });
-    setTeamMembers(await agentsApi.getAll());
+    setTeamMembers(filterAgentsForUser(await agentsApi.getAll(), currentUser));
   };
 
   const handleEditAgent = (agent: any) => {
@@ -100,12 +112,12 @@ export function AgentManagement() {
     await agentsApi.update(editingAgent.id, editAgentData);
     setIsEditAgentModalOpen(false);
     setEditingAgent(null);
-    setTeamMembers(await agentsApi.getAll());
+    setTeamMembers(filterAgentsForUser(await agentsApi.getAll(), currentUser));
   };
 
   const handleRemoveAgent = async (agentId: string) => {
     await agentsApi.remove(agentId);
-    setTeamMembers(await agentsApi.getAll());
+    setTeamMembers(filterAgentsForUser(await agentsApi.getAll(), currentUser));
   };
 
   const handleViewDetails = (memberId: string) => {
