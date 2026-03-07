@@ -1,6 +1,7 @@
 "use client";
 
-import { TrendingUp, Users, DollarSign, Clock, Users2, Target, User, CircleCheck } from "lucide-react";
+import { TrendingUp, Users, Clock, Users2, Target, User, CircleCheck } from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -164,7 +165,7 @@ export function DashboardOverview() {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-accent" />
+                    <NairaSign className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </CardContent>
@@ -245,7 +246,7 @@ export function DashboardOverview() {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-accent" />
+                    <NairaSign className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </CardContent>
@@ -302,7 +303,7 @@ export function DashboardOverview() {
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-accent" />
+                  <NairaSign className="w-6 h-6 text-accent" />
                 </div>
               </div>
             </CardContent>

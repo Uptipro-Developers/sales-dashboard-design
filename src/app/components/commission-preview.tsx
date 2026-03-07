@@ -18,15 +18,14 @@ import {
 } from "./ui/dialog";
 import {
   Award,
-  DollarSign,
   TrendingUp,
   Clock,
   Users,
   Users2,
   CreditCard,
   CircleCheck,
-  Calendar,
-} from "lucide-react";
+  Calendar} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import {
   BarChart,
   PieChart,
@@ -211,7 +210,7 @@ export function CommissionPreview() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center">
-                    <DollarSign className="w-7 h-7 text-accent" />
+                    <NairaSign className="w-7 h-7 text-accent" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
@@ -289,7 +288,7 @@ export function CommissionPreview() {
                 </p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-primary" />
+                <NairaSign className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>

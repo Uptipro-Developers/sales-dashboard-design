@@ -9,14 +9,13 @@ import {
   Phone,
   Building,
   MapPin,
-  DollarSign,
   Calendar,
   Tag,
   FileText,
   Clock,
   Edit,
-  Trash2,
-} from "lucide-react";
+  Trash2} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -347,7 +346,7 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
+                <NairaSign className="w-4 h-4" />
                 Payment Schedule
               </CardTitle>
             </CardHeader>

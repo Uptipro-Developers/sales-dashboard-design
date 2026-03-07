@@ -7,11 +7,10 @@ import {
   Users,
   TrendingUp,
   Briefcase,
-  DollarSign,
   ChevronDown,
   ChevronRight,
-  UserCog,
-} from "lucide-react";
+  UserCog} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { useUser } from "../contexts/user-context";
 import { cn } from "./ui/utils";
 import { Badge } from "./ui/badge";
@@ -103,7 +102,7 @@ export function Sidebar() {
     {
       id: "earnings",
       label: "Earnings",
-      items: [{ id: "commission", label: "Commission", icon: DollarSign }],
+      items: [{ id: "commission", label: "Commission", icon: NairaSign }],
     },
   ];
 

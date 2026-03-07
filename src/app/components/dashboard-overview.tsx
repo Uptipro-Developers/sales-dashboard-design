@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import {
   TrendingUp,
   Users,
-  DollarSign,
   Clock,
   Users2,
   Target,
   User,
-  CircleCheck,
-} from "lucide-react";
+  CircleCheck} from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import {
@@ -46,6 +45,7 @@ export function DashboardOverview() {
   const userRole = (currentUser?.role as string)?.toUpperCase();
   const isTeamLead = userRole === "TEAM_LEAD";
   const isAgent = userRole === "AGENT" || userRole === "SALES_AGENT";
+  const isFreelancer = userRole === "FREELANCER";
 
   // API state
   const [funnelData, setFunnelData] = useState<any[]>([]);
@@ -207,7 +207,7 @@ export function DashboardOverview() {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-accent" />
+                    <NairaSign className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </CardContent>
@@ -302,7 +302,7 @@ export function DashboardOverview() {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-accent" />
+                    <NairaSign className="w-6 h-6 text-accent" />
                   </div>
                 </div>
               </CardContent>
@@ -395,7 +395,7 @@ export function DashboardOverview() {
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-accent" />
+                  <NairaSign className="w-6 h-6 text-accent" />
                 </div>
               </div>
             </CardContent>
@@ -407,6 +407,95 @@ export function DashboardOverview() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
                     Earned Commission
+                  </p>
+                  <p className="text-3xl font-semibold text-accent">
+                    ₦{personalStats.personalCommission.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Total earned
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-accent" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Freelancer: Personal Stats */}
+      {isFreelancer && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Leads Referred
+                  </p>
+                  <p className="text-3xl font-semibold">
+                    {personalStats.personalLeads}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Active leads
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Deals Completed
+                  </p>
+                  <p className="text-3xl font-semibold text-accent">
+                    {personalStats.personalDealsCompleted}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This month
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <CircleCheck className="w-6 h-6 text-accent" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Deals in Progress
+                  </p>
+                  <p className="text-3xl font-semibold text-warning">
+                    {personalStats.personalDealsInProgress}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Active pipeline
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-warning" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    My Commission
                   </p>
                   <p className="text-3xl font-semibold text-accent">
                     ₦{personalStats.personalCommission.toLocaleString()}

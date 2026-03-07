@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { 
-  DollarSign, 
   Target, 
   Users, 
   Activity, 
@@ -11,6 +10,7 @@ import {
   Award,
   TrendingUp
 } from "lucide-react";
+import { NairaSign } from "@/app/components/NairaSign";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -70,7 +70,7 @@ export function Performance() {
     {
       label: "Clusters",
       value: clusterPerformance.length,
-      icon: DollarSign,
+      icon: NairaSign,
       trend: "up",
       change: "+0",
       bgColor: "bg-purple-100",
@@ -131,7 +131,7 @@ export function Performance() {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {performanceMetrics.map((metric) => {
-          const Icon = metric.icon || DollarSign;
+          const Icon = metric.icon || NairaSign;
           const isPositive = metric.trend === "up";
           return (
             <Card key={metric.label} className="p-5">
