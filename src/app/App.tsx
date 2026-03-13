@@ -232,7 +232,9 @@ function AppRouter() {
         path="/*"
         element={
           isAuthenticated ? (
-            <AppContent onLogout={handleLogout} />
+            <UserProvider>
+              <AppContent onLogout={handleLogout} />
+            </UserProvider>
           ) : (
             <Navigate to="/login" replace />
           )
@@ -247,9 +249,7 @@ export default function App() {
     <ThemeProvider>
       <Router>
         <ToastProvider>
-          <UserProvider>
-            <AppRouter />
-          </UserProvider>
+          <AppRouter />
         </ToastProvider>
       </Router>
     </ThemeProvider>
