@@ -138,37 +138,42 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function fetchAll() {
       setLoading(true);
-      const [user, agents, clustersData, leadsData] = await Promise.all([
-        userApi.getCurrent(),
-        agentsApi.getAll(),
-        clustersApi.getAll(),
-        leadsApi.getAll(),
-      ]);
-      // Ensure notifications is always an array
-      if (user && !user.notifications) {
-        user.notifications = [];
-      }
-      setCurrentUser(user);
+      try {
+        const [user, agents, clustersData, leadsData] = await Promise.all([
+          userApi.getCurrent(),
+          agentsApi.getAll(),
+          clustersApi.getAll(),
+          leadsApi.getAll(),
+        ]);
+        // Ensure notifications is always an array
+        if (user && !user.notifications) {
+          user.notifications = [];
+        }
+        setCurrentUser(user);
 
-      // Scope teamMembers to what this role should see
-      const role = (user?.role as string)?.toUpperCase();
-      let visibleAgents = agents;
-      if (role === "TEAM_LEAD") {
-        visibleAgents = agents.filter(
-          (a: any) => a.clusterId === user.clusterId,
-        );
-      } else if (role === "AGENT" || role === "SALES_AGENT") {
-        visibleAgents = agents.filter(
-          (a: any) => a.role === "FREELANCER" && a.creatorId === user.id,
-        );
-      } else if (role === "FREELANCER") {
-        visibleAgents = [];
-      }
-      setTeamMembers(visibleAgents);
+        // Scope teamMembers to what this role should see
+        const role = (user?.role as string)?.toUpperCase();
+        let visibleAgents = agents;
+        if (role === "TEAM_LEAD") {
+          visibleAgents = agents.filter(
+            (a: any) => a.clusterId === user.clusterId,
+          );
+        } else if (role === "AGENT" || role === "SALES_AGENT") {
+          visibleAgents = agents.filter(
+            (a: any) => a.role === "FREELANCER" && a.creatorId === user.id,
+          );
+        } else if (role === "FREELANCER") {
+          visibleAgents = [];
+        }
+        setTeamMembers(visibleAgents);
 
-      setClusters(clustersData);
-      setLeads(leadsData);
-      setLoading(false);
+        setClusters(clustersData);
+        setLeads(leadsData);
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchAll();
   }, []);
@@ -235,7 +240,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setLeads(await leadsApi.getAll());
   };
 
-  if (loading || !currentUser) return null;
+  if (loading || !currentUser) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <UserContext.Provider
