@@ -199,23 +199,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const getVisibleLeads = () => {
     if (!currentUser) return [];
+    // The API returns leads with Prisma field names:
+    // - createdBy: { id, name } (nested User object)
+    // - assignedTo: { id, user: { id, name } } (nested Agent object)
+    // - assignedToId: Agent.id (scalar)
+    // - createdById: User.id (scalar)
+    // - assignedCluster: cluster id (scalar)
+    const agentId = (currentUser as any)?.agentProfile?.id;
     if (currentUser.role === "TEAM_LEAD") {
-      return leads.filter((lead) => lead.clusterId === currentUser.clusterId);
-    } else if (currentUser.role === "AGENT") {
-      const freelancerIds = teamMembers
-        .filter(
-          (member) =>
-            member.role === "FREELANCER" && member.creatorId === currentUser.id,
-        )
-        .map((member) => member.id);
       return leads.filter(
-        (lead) =>
-          lead.createdBy === currentUser.id ||
-          lead.assignedTo === currentUser.id ||
-          (lead.freelancerId && freelancerIds.includes(lead.freelancerId)),
+        (lead: any) =>
+          lead.clusterId === currentUser.clusterId ||
+          lead.assignedCluster === currentUser.clusterId,
+      );
+    } else if (currentUser.role === "AGENT") {
+      return leads.filter(
+        (lead: any) =>
+          // created by this user
+          lead.createdById === currentUser.id ||
+          lead.createdBy?.id === currentUser.id ||
+          // assigned to this agent (by Agent.id)
+          (agentId && lead.assignedToId === agentId) ||
+          // assigned to this agent (nested object)
+          lead.assignedTo?.user?.id === currentUser.id,
       );
     } else if (currentUser.role === "FREELANCER") {
-      return leads.filter((lead) => lead.createdBy === currentUser.id);
+      return leads.filter(
+        (lead: any) =>
+          lead.createdById === currentUser.id ||
+          lead.createdBy?.id === currentUser.id,
+      );
     }
     return [];
   };
