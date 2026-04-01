@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useState } from "react";
-import { FeedbackWidget } from "widget";
+import { FeedbackWidget } from "../components/FeedbackWidget";
 import {
   LayoutDashboard,
   Package,
