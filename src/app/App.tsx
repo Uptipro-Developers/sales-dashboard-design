@@ -8,6 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useState } from "react";
+import { FeedbackWidget } from "widget";
 import {
   LayoutDashboard,
   Package,
@@ -244,12 +245,29 @@ function AppRouter() {
   );
 }
 
+const THUEBRIDGE_APP_ID = import.meta.env.VITE_THUEBRIDGE_APP_ID as
+  | string
+  | undefined;
+const THUEBRIDGE_API_KEY = import.meta.env.VITE_THUEBRIDGE_API_KEY as
+  | string
+  | undefined;
+const THUEBRIDGE_API_BASE_URL = import.meta.env.VITE_THUEBRIDGE_API_BASE_URL as
+  | string
+  | undefined;
+
 export default function App() {
   return (
     <ThemeProvider>
       <Router>
         <ToastProvider>
           <AppRouter />
+          {THUEBRIDGE_APP_ID && THUEBRIDGE_API_KEY && (
+            <FeedbackWidget
+              appId={THUEBRIDGE_APP_ID}
+              apiKey={THUEBRIDGE_API_KEY}
+              apiBaseUrl={THUEBRIDGE_API_BASE_URL}
+            />
+          )}
         </ToastProvider>
       </Router>
     </ThemeProvider>

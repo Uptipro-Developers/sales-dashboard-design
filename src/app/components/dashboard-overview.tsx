@@ -8,7 +8,8 @@ import {
   Users2,
   Target,
   User,
-  CircleCheck} from "lucide-react";
+  CircleCheck,
+} from "lucide-react";
 import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -53,15 +54,20 @@ export function DashboardOverview() {
   const [performanceData, setPerformanceData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Personal stats derived from currentUser's agentProfile
+  // Personal stats derived from currentUser's agentProfile (scalar fields on Agent model)
   const agentProfile = (currentUser as any)?.agentProfile;
+  const visibleLeads = getVisibleLeads();
   const personalStats = {
-    personalLeads: agentProfile?.assignedLeads?.length ?? 0,
+    // assignedLeads from agentProfile is capped at 50 by the API; fall back to context leads
+    personalLeads: agentProfile?.assignedLeads?.length ?? visibleLeads.length,
     personalDealsCompleted: agentProfile?.closedDeals ?? 0,
+    // PENDING = in-progress; fall back to activeDeals field or context lead count
     personalDealsInProgress:
       agentProfile?.leadTransactions?.filter(
-        (tx: any) => tx.status !== "COMPLETED",
-      ).length ?? 0,
+        (tx: any) => tx.status === "PENDING",
+      ).length ??
+      agentProfile?.activeDeals ??
+      0,
     personalCommission: agentProfile?.totalCommission ?? 0,
   };
 
@@ -92,7 +98,7 @@ export function DashboardOverview() {
       .then((performance) => {
         setPerformanceData(performance);
         setFunnelData(
-          (performance.conversionMetrics || []).map(
+          (performance?.conversionMetrics || []).map(
             (item: any, idx: number) => ({
               stage: item.stage,
               count: item.count,
@@ -102,11 +108,16 @@ export function DashboardOverview() {
             }),
           ),
         );
-        // Use role-scoped leads from context instead of fetching all
+      })
+      .catch(() => {
+        // Performance data unavailable — non-fatal, continue with context data
+      })
+      .finally(() => {
+        // Use role-scoped leads from context
         const myLeads = getVisibleLeads();
         setRecentLeads(myLeads.slice(0, 5));
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
