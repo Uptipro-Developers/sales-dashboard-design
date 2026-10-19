@@ -46,6 +46,14 @@ import { InstallmentCommissionTracker } from "./installment-commission-tracker";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { INVESTMENT_PLATFORMS } from "../utils/platform";
 
 import { Progress } from "./ui/progress";
 import {
@@ -80,14 +88,16 @@ export function CommissionPreview() {
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [commissionBreakdown, setCommissionBreakdown] = useState<any[]>([]);
   const [eligibleCommissions, setEligibleCommissions] = useState<any[]>([]);
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
 
   useEffect(() => {
     setLoading(true);
+    const platform = selectedPlatform === "all" ? undefined : selectedPlatform;
     Promise.all([
       userApi.getCurrent(),
-      reportsApi.getCommissions(),
-      transactionCommissionsApi.getPaid(),
-      transactionCommissionsApi.getUnpaid(),
+      reportsApi.getCommissions(undefined, platform),
+      transactionCommissionsApi.getPaid(undefined, platform),
+      transactionCommissionsApi.getUnpaid(undefined, platform),
     ])
       .then(async ([user, reportData, paid, unpaid]) => {
         // Normalize role to lowercase for consistent comparisons
@@ -125,7 +135,7 @@ export function CommissionPreview() {
         setEligibleCommissions([...(paid || []), ...(unpaid || [])]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedPlatform]);
 
   if (loading || !currentUser) return <div>Loading commissions...</div>;
 
@@ -161,13 +171,26 @@ export function CommissionPreview() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1>Commission Preview</h1>
-        <p className="text-muted-foreground">
-          {currentUser.role === "team_lead"
-            ? "View team commission performance and your team lead bonus"
-            : "Track your earnings and commission breakdown"}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1>Commission Preview</h1>
+          <p className="text-muted-foreground">
+            {currentUser.role === "team_lead"
+              ? "View team commission performance and your team lead bonus"
+              : "Track your earnings and commission breakdown"}
+          </p>
+        </div>
+        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder="Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Platforms</SelectItem>
+            {INVESTMENT_PLATFORMS.map((platform) => (
+              <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Team Lead Bonus Banner */}
