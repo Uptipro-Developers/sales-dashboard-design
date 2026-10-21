@@ -18,19 +18,22 @@ import { useUser } from "../contexts/user-context";
 import { cn } from "./ui/utils";
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { reportsApi } from "../utils/api-service";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { INVESTMENT_PLATFORMS } from "../utils/platform";
 
 export function Performance() {
   const { currentUser } = useUser();
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month");
+  const [platform, setPlatform] = useState("all");
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    reportsApi.getPerformance(timeRange)
+    reportsApi.getPerformance(timeRange, platform === "all" ? undefined : platform)
       .then(setData)
       .finally(() => setLoading(false));
-  }, [timeRange]);
+  }, [timeRange, platform]);
 
   if (loading) return <div>Loading performance...</div>;
 
@@ -97,6 +100,17 @@ export function Performance() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Select value={platform} onValueChange={setPlatform}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All platforms" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All platforms</SelectItem>
+              {INVESTMENT_PLATFORMS.map((item) => (
+                <SelectItem key={item} value={item}>{item}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant={timeRange === "week" ? "default" : "outline"}
             size="sm"

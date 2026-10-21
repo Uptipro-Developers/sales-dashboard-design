@@ -9,7 +9,8 @@ import {
   Briefcase,
   ChevronDown,
   ChevronRight,
-  UserCog} from "lucide-react";
+  UserCog,
+  UserRoundCheck} from "lucide-react";
 import { NairaSign } from "@/app/components/NairaSign";
 import { useUser } from "../contexts/user-context";
 import { cn } from "./ui/utils";
@@ -87,6 +88,7 @@ export function Sidebar() {
         { id: "overview", label: "Dashboard", icon: LayoutDashboard },
         { id: "assets", label: "Assets", icon: Package },
         { id: "leads", label: "Leads", icon: Users },
+        { id: "investors", label: "Investors", icon: UserRoundCheck },
         { id: "deals", label: "Deals", icon: TrendingUp },
       ],
     },

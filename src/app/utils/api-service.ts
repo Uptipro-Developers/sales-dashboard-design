@@ -6,12 +6,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:8080"),
+  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:1000"),
   headers: { "Content-Type": "application/json" },
 });
 
 const refreshClient = axios.create({
-  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:8080"),
+  baseURL: ((import.meta as any).env?.VITE_API_URL || "http://localhost:1000"),
   headers: { "Content-Type": "application/json" },
 });
 
@@ -171,10 +171,10 @@ export const paymentsApi = {
 
 // TRANSACTION COMMISSIONS (Paid/Unpaid)
 export const transactionCommissionsApi = {
-  getUnpaid: async (month?: string) =>
-    (await api.get("/transactions/commissions/unpaid", { params: month ? { month } : {} })).data,
-  getPaid: async (month?: string) =>
-    (await api.get("/transactions/commissions/paid", { params: month ? { month } : {} })).data,
+  getUnpaid: async (month?: string, platform?: string) =>
+    (await api.get("/transactions/commissions/unpaid", { params: { ...(month ? { month } : {}), ...(platform ? { platform } : {}) } })).data,
+  getPaid: async (month?: string, platform?: string) =>
+    (await api.get("/transactions/commissions/paid", { params: { ...(month ? { month } : {}), ...(platform ? { platform } : {}) } })).data,
   sendCommissions: async (transactionIds: string[]) =>
     (await api.post("/transactions/commissions/send", { transactionIds })).data,
   uploadPaymentProof: async (file: File) => {
@@ -253,6 +253,15 @@ export const userApi = {
   // Add more user-related endpoints as needed
 };
 
+export const investorsApi = {
+  getAll: async (filters?: { track?: "FOUNDRY" | "HARBOR"; search?: string }) =>
+    (
+      await api.get("/users", {
+        params: { role: "INVESTOR", ...(filters || {}) },
+      })
+    ).data,
+};
+
 // TEAM
 export const teamApi = {
   getById: async (id: string) => (await api.get(`/team/${id}`)).data,
@@ -260,8 +269,8 @@ export const teamApi = {
 
 // REPORTS (from reports.controller.ts)
 export const reportsApi = {
-  getSales: async (dateRange?: string) =>
-    (await api.get("/reports/sales", { params: dateRange ? { dateRange } : {} })).data,
+  getSales: async (dateRange?: string, platform?: string) =>
+    (await api.get("/reports/sales", { params: { ...(dateRange ? { dateRange } : {}), ...(platform ? { platform } : {}) } })).data,
   getAssets: async (dateRange?: string) =>
     (await api.get("/reports/assets", { params: dateRange ? { dateRange } : {} })).data,
   getAgents: async (dateRange?: string) =>
@@ -270,10 +279,10 @@ export const reportsApi = {
     (await api.get("/reports/clusters", { params: dateRange ? { dateRange } : {} })).data,
   getInvestments: async (dateRange?: string) =>
     (await api.get("/reports/investments", { params: dateRange ? { dateRange } : {} })).data,
-  getCommissions: async (dateRange?: string) =>
-    (await api.get("/reports/commissions", { params: dateRange ? { dateRange } : {} })).data,
-  getPerformance: async (dateRange?: string) =>
-    (await api.get("/reports/performance", { params: dateRange ? { dateRange } : {} })).data,
+  getCommissions: async (dateRange?: string, platform?: string) =>
+    (await api.get("/reports/commissions", { params: { ...(dateRange ? { dateRange } : {}), ...(platform ? { platform } : {}) } })).data,
+  getPerformance: async (dateRange?: string, platform?: string) =>
+    (await api.get("/reports/performance", { params: { ...(dateRange ? { dateRange } : {}), ...(platform ? { platform } : {}) } })).data,
   exportReport: async (type: "sales" | "agents" | "clusters", dateRange?: string) =>
     (await api.get("/reports/export", {
       params: { type, ...(dateRange ? { dateRange } : {}) },
@@ -293,7 +302,7 @@ export const notificationsApi = {
  */
 export const resolveMediaUrl = (url: string | null | undefined): string => {
   if (!url) return '';
-  const apiBase = (((import.meta as any).env?.VITE_API_URL) || 'http://localhost:8080').replace(/\/$/, '');
+  const apiBase = (((import.meta as any).env?.VITE_API_URL) || 'http://localhost:1000').replace(/\/$/, '');
   if (url.startsWith(apiBase)) return url;
   if (url.startsWith('/')) return `${apiBase}${url}`;
   if (/^https?:\/\/localhost(:\d+)?/.test(url)) {

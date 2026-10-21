@@ -34,6 +34,11 @@ import {
   Shield,
   Sofa} from "lucide-react";
 import { NairaSign } from "@/app/components/NairaSign";
+import {
+  INVESTMENT_PLATFORMS,
+  platformBadgeClass,
+  platformLabel,
+} from "../utils/platform";
 
 // Map asset types to icon components
 const typeIcons: Record<string, React.ElementType> = {
@@ -117,16 +122,44 @@ type Asset = {
 
 export function AssetBrowser() {
   const [assets, setAssets] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPlatform, setFilterPlatform] = useState("all");
   const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
+  const loadAssets = async () => {
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const response = await assetsApi.getAll();
+      const items = Array.isArray(response) ? response : response?.data;
+
+      if (!Array.isArray(items)) {
+        throw new Error("The assets response was not in the expected format.");
+      }
+
+      setAssets(items);
+    } catch (error: any) {
+      setAssets([]);
+      setLoadError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Unable to load assets. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    assetsApi.getAll().then(setAssets);
+    void loadAssets();
   }, []);
 
   const filteredAssets = assets.filter((asset) => {
@@ -140,7 +173,9 @@ export function AssetBrowser() {
     const matchesStatus =
       filterStatus === "all" ||
       asset.projectStatus?.toLowerCase() === filterStatus.toLowerCase();
-    return matchesSearch && matchesType && matchesStatus;
+    const matchesPlatform =
+      filterPlatform === "all" || asset.platform === filterPlatform;
+    return matchesSearch && matchesType && matchesStatus && matchesPlatform;
   });
 
   if (selectedAsset) {
@@ -234,6 +269,17 @@ export function AssetBrowser() {
                       }
                     >
                       {selectedAsset.projectStatus}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Platform
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className={platformBadgeClass(selectedAsset.platform)}
+                    >
+                      {platformLabel(selectedAsset.platform)}
                     </Badge>
                   </div>
                   <div className="pt-3 border-t">
@@ -837,6 +883,19 @@ export function AssetBrowser() {
                 <SelectItem value="planning">Planning</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="Platform" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Platforms</SelectItem>
+                {INVESTMENT_PLATFORMS.map((platform) => (
+                  <SelectItem key={platform} value={platform}>
+                    {platform}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="flex gap-2">
               <Button
                 variant={viewMode === "grid" ? "default" : "outline"}
@@ -857,15 +916,41 @@ export function AssetBrowser() {
         </CardContent>
       </Card>
 
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredAssets.length} of {assets.length} assets
-        </p>
-      </div>
+      {loadError ? (
+        <Card className="border-destructive/40">
+          <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium">Unable to load assets</p>
+              <p className="text-sm text-muted-foreground">{loadError}</p>
+            </div>
+            <Button variant="outline" onClick={() => void loadAssets()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {isLoading
+              ? "Loading assets…"
+              : `Showing ${filteredAssets.length} of ${assets.length} assets`}
+          </p>
+        </div>
+      )}
 
       {/* Asset Display */}
-      {viewMode === "grid" ? (
+      {!isLoading && !loadError && filteredAssets.length === 0 ? (
+        <Card>
+          <CardContent className="p-10 text-center">
+            <Building2 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="font-medium">No assets found</p>
+            <p className="text-sm text-muted-foreground">
+              Try changing the search term or filters.
+            </p>
+          </CardContent>
+        </Card>
+      ) : !isLoading && !loadError && viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAssets.map((asset) => {
             const TypeIcon = typeIcons[asset.type] || Building2;
@@ -899,6 +984,14 @@ export function AssetBrowser() {
                   <div className="absolute top-3 right-3 z-10">
                     <Badge className={statusColors[asset.status]}>
                       {asset.status}
+                    </Badge>
+                  </div>
+                  <div className="absolute top-3 left-3 z-10">
+                    <Badge
+                      variant="outline"
+                      className={platformBadgeClass(asset.platform)}
+                    >
+                      {platformLabel(asset.platform)}
                     </Badge>
                   </div>
                   {asset.images?.length > 1 && (
@@ -990,7 +1083,7 @@ export function AssetBrowser() {
             );
           })}
         </div>
-      ) : (
+      ) : !isLoading && !loadError ? (
         <Card>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
@@ -1035,6 +1128,12 @@ export function AssetBrowser() {
                             </h3>
                             <Badge className={statusColors[asset.status]}>
                               {asset.status}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={platformBadgeClass(asset.platform)}
+                            >
+                              {platformLabel(asset.platform)}
                             </Badge>
                             {asset.projectStatus && (
                               <Badge
@@ -1096,7 +1195,7 @@ export function AssetBrowser() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* Image Viewer Dialog */}
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>

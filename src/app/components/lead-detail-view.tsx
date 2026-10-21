@@ -14,7 +14,9 @@ import {
   FileText,
   Clock,
   Edit,
-  Trash2} from "lucide-react";
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 import { NairaSign } from "@/app/components/NairaSign";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -30,6 +32,11 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useUser } from "../contexts/user-context";
+import {
+  INVESTMENT_PLATFORMS,
+  platformBadgeClass,
+  platformLabel,
+} from "../utils/platform";
 
 interface LeadDetailViewProps {
   leadId: string;
@@ -72,6 +79,7 @@ const sourceOptions = [
 ];
 
 export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
+  const { currentUser, teamMembers, clusters } = useUser();
   const [leadData, setLeadData] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -87,10 +95,27 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
 
   if (!leadData) return <div>Loading lead details...</div>;
 
-  const { currentUser, teamMembers, clusters } = useUser();
   const currentStatus = statusOptions.find(
     (s: { value: any }) => s.value === leadData.status,
   );
+  const canConvertToInvestor = INVESTMENT_PLATFORMS.includes(leadData.platform);
+
+  const handleConvertToInvestor = () => {
+    if (!canConvertToInvestor) return;
+
+    const investorAppUrl =
+      import.meta.env.VITE_INVESTOR_APP_URL || "http://localhost:3000";
+    const signupUrl = new URL("/auth/signup", investorAppUrl);
+    signupUrl.searchParams.set(
+      "track",
+      leadData.platform === "Urbco Foundry" ? "foundry" : "harbor",
+    );
+    signupUrl.searchParams.set("leadId", leadData.id);
+    signupUrl.searchParams.set("name", leadData.name || "");
+    signupUrl.searchParams.set("email", leadData.email || "");
+    if (leadData.phone) signupUrl.searchParams.set("phone", leadData.phone);
+    window.open(signupUrl.toString(), "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="space-y-6">
@@ -112,6 +137,12 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
               >
                 {currentStatus?.label || leadData.status || "Unknown"}
               </Badge>
+              <Badge
+                variant="outline"
+                className={platformBadgeClass(leadData.platform)}
+              >
+                {platformLabel(leadData.platform)}
+              </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Created on{" "}
@@ -124,6 +155,20 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
         <div className="flex items-center gap-2">
           {!isEditing ? (
             <>
+              {leadData.status !== "converted" && (
+                <Button
+                  onClick={handleConvertToInvestor}
+                  disabled={!canConvertToInvestor}
+                  title={
+                    canConvertToInvestor
+                      ? "Open investor registration with this lead's details"
+                      : "Assign an investment platform before converting this lead"
+                  }
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Convert to Investor
+                </Button>
+              )}
               <Button variant="outline" onClick={() => setIsEditing(true)}>
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Lead
@@ -152,7 +197,7 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="lead-name">Full Name</Label>
                   <div className="flex items-center gap-2">
@@ -169,6 +214,35 @@ export function LeadDetailView({ leadId, onBack }: LeadDetailViewProps) {
                       <span>{leadData.name}</span>
                     )}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Investment Platform</Label>
+                  {isEditing ? (
+                    <Select
+                      value={leadData.platform || ""}
+                      onValueChange={(platform) =>
+                        setLeadData({ ...leadData, platform })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INVESTMENT_PLATFORMS.map((platform) => (
+                          <SelectItem key={platform} value={platform}>
+                            {platform}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className={platformBadgeClass(leadData.platform)}
+                    >
+                      {platformLabel(leadData.platform)}
+                    </Badge>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lead-email">Email</Label>
