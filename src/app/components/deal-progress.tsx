@@ -43,12 +43,29 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useToast } from "../contexts/toast-context";
+import {
+  INVESTMENT_PLATFORMS,
+  platformBadgeClass,
+  platformLabel,
+} from "../utils/platform";
 
-const statusColors: Record<string, string> = {
-  viewing: "bg-primary/10 text-primary",
-  negotiation: "bg-warning/10 text-warning",
-  ready: "bg-accent/10 text-accent",
-  unpaid: "bg-warning/10 text-warning", // Added unpaid status
+const paymentStatusColors: Record<string, string> = {
+  pending: "bg-warning/10 text-warning",
+  completed: "bg-accent/10 text-accent",
+  paid: "bg-accent/10 text-accent",
+  cancelled: "bg-destructive/10 text-destructive",
+};
+
+const commissionStatusColors: Record<string, string> = {
+  unpaid: "bg-warning/10 text-warning border-warning/20",
+  sent: "bg-primary/10 text-primary border-primary/20",
+  paid: "bg-accent/10 text-accent border-accent/20",
+};
+
+const paymentStatusLabel = (status: string) => {
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "completed" || normalized === "paid") return "Paid";
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
 export function DealProgress() {
@@ -64,6 +81,7 @@ export function DealProgress() {
   >(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"my" | "team">("my");
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
   const [selectedDealForDetails, setSelectedDealForDetails] = useState<
     string | null
   >(null);
@@ -163,7 +181,10 @@ export function DealProgress() {
   };
 
   // Filter deals for "my" or "team" tab if needed
-  const displayDeals = deals;
+  const displayDeals =
+    selectedPlatform === "all"
+      ? deals
+      : deals.filter((deal) => deal.platform === selectedPlatform);
   // currentUser.role === "AGENT" && activeTab === "team"
   //   ? deals.filter((d) =>
   //     (typeof d.teamLeadId === "object" ? d.teamLeadId?.id : d.teamLeadId) === currentUser.id
@@ -184,20 +205,32 @@ export function DealProgress() {
   const canManagePayments = (role: string) =>
     role === "AGENT" || role === "TEAM_LEAD" || role === "sales_agent";
 
-  const canOpenPaymentFlow = (status: string) => {
-    const normalized = String(status || "").toLowerCase();
-    return ["ready", "unpaid", "sent", "pending"].includes(normalized);
+  const canOpenPaymentFlow = (paymentStatus: string) => {
+    return String(paymentStatus || "pending").toLowerCase() === "pending";
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1>Deal Progress</h1>
-        <p className="text-muted-foreground">
-          {currentUser.role === "AGENT"
-            ? "Track your personal deals and monitor team deal coordination"
-            : "Track your deals through the sales pipeline"}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1>Deal Progress</h1>
+          <p className="text-muted-foreground">
+            {currentUser.role === "AGENT"
+              ? "Track your personal deals and monitor team deal coordination"
+              : "Track your deals through the sales pipeline"}
+          </p>
+        </div>
+        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder="Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Platforms</SelectItem>
+            {INVESTMENT_PLATFORMS.map((platform) => (
+              <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Team Lead: Personal vs Team Toggle */}
@@ -244,7 +277,12 @@ export function DealProgress() {
                     Ready to Close
                   </p>
                   <p className="text-2xl font-semibold text-accent">
-                    {teamDeals.filter((d) => d.status === "ready").length}
+                    {
+                      teamDeals.filter(
+                        (d) =>
+                          String(d.paymentStatus).toLowerCase() === "pending",
+                      ).length
+                    }
                   </p>
                 </div>
                 <div className="p-3 bg-card rounded-lg">
@@ -302,9 +340,27 @@ export function DealProgress() {
                       : deal.asset || "-"}
                   </p>
                 </div>
-                <Badge className={statusColors[deal.status]}>
-                  {deal.status}
-                </Badge>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <Badge className={paymentStatusColors[deal.paymentStatus]}>
+                    Payment: {paymentStatusLabel(deal.paymentStatus)}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={
+                      commissionStatusColors[
+                        deal.commissionStatus || deal.status
+                      ]
+                    }
+                  >
+                    Commission: {deal.commissionStatus || deal.status}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={platformBadgeClass(deal.platform)}
+                  >
+                    {platformLabel(deal.platform)}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -450,7 +506,7 @@ export function DealProgress() {
               {/* Actions */}
               <div className="flex items-center gap-3">
                 {canManagePayments(currentUser.role) &&
-                  canOpenPaymentFlow(deal.status) && (
+                  canOpenPaymentFlow(deal.paymentStatus) && (
                     <>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -617,7 +673,7 @@ export function DealProgress() {
                     </>
                   )}
                 {canManagePayments(currentUser.role) &&
-                  !canOpenPaymentFlow(deal.status) && (
+                  !canOpenPaymentFlow(deal.paymentStatus) && (
                     <Button
                       variant="outline"
                       className="flex-1"

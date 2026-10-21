@@ -19,6 +19,7 @@ import {
   Receipt,
   Settings,
   HelpCircle,
+  UserRoundCheck,
 } from "lucide-react";
 
 // Import components
@@ -33,6 +34,7 @@ import { ProfileSettings } from "./components/profile-settings";
 import { Performance } from "./components/performance";
 import { HelpSupport } from "./components/help-support";
 import { PaymentCallback } from "./components/payment-callback";
+import { InvestorManagement } from "./components/investor-management";
 import { Login } from "./components/login";
 import { Signup, SignupData } from "./components/signup";
 import { Sidebar } from "./components/sidebar";
@@ -47,6 +49,7 @@ type NavItem =
   | "overview"
   | "assets"
   | "leads"
+  | "investors"
   | "deals"
   | "commission"
   | "agents"
@@ -78,6 +81,7 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "assets", label: "Assets", icon: Package },
         { id: "leads", label: "Leads", icon: Users },
+        { id: "investors", label: "Investors", icon: UserRoundCheck },
         { id: "deals", label: "Deals", icon: TrendingUp },
         { id: "commission", label: "Commission", icon: NairaSign },
       ],
@@ -141,6 +145,7 @@ function AppContent({ onLogout }: { onLogout: () => void }) {
             <Route path="/" element={<DashboardOverview />} />
             <Route path="assets" element={<AssetBrowser />} />
             <Route path="leads" element={<LeadManagement />} />
+            <Route path="investors" element={<InvestorManagement />} />
             <Route path="deals" element={<DealProgress />} />
             <Route path="commission" element={<CommissionPreview />} />
             <Route path="agents" element={<AgentManagement />} />

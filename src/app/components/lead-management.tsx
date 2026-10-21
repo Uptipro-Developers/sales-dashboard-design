@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { leadsApi, assetsApi } from "../utils/api-service";
-import { Plus, Eye, Mail, Phone, Calendar, UserPlus, X } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Mail,
+  Phone,
+  Calendar,
+  UserPlus,
+  X,
+  AlertCircle,
+} from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -27,6 +36,11 @@ import {
 import { useUser } from "../contexts/user-context";
 import { LeadDetailView } from "./lead-detail-view";
 import { useToast } from "../contexts/toast-context";
+import {
+  INVESTMENT_PLATFORMS,
+  platformBadgeClass,
+  platformLabel,
+} from "../utils/platform";
 
 const statusLabels: Record<string, string> = {
   new: "New lead",
@@ -55,32 +69,66 @@ export function LeadManagement() {
   const [leads, setLeads] = useState<any[]>([]);
   const [availableAssets, setAvailableAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeTab, setActiveTab] = useState("all");
+  const [filterPlatform, setFilterPlatform] = useState("all");
   const [newLeadData, setNewLeadData] = useState({
     name: "",
     email: "",
     phone: "",
     company: "",
     source: "self",
+    platform: "",
     assetInterests: [] as string[],
     budget: "",
     notes: "",
     followUpDate: "",
     assignTo: "",
   });
-  useEffect(() => {
+  const extractList = (response: any, label: string) => {
+    const items = Array.isArray(response) ? response : response?.data;
+    if (!Array.isArray(items)) {
+      throw new Error(`The ${label} response was not in the expected format.`);
+    }
+    return items;
+  };
+
+  const refreshLeads = async () => {
+    const response = await leadsApi.getAll();
+    setLeads(extractList(response, "leads"));
+  };
+
+  const loadLeadData = async () => {
     setLoading(true);
-    Promise.all([leadsApi.getAll(), assetsApi.getAll()])
-      .then(([leadsData, assetsData]) => {
-        setLeads(leadsData);
-        setAvailableAssets(assetsData);
-      })
-      .finally(() => setLoading(false));
+    setLoadError(null);
+
+    try {
+      const [leadsData, assetsData] = await Promise.all([
+        leadsApi.getAll(),
+        assetsApi.getAll(),
+      ]);
+      setLeads(extractList(leadsData, "leads"));
+      setAvailableAssets(extractList(assetsData, "assets"));
+    } catch (err: any) {
+      setLeads([]);
+      setAvailableAssets([]);
+      setLoadError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to load leads. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadLeadData();
   }, []);
 
   const handleCreateLead = async () => {
@@ -91,6 +139,10 @@ export function LeadManagement() {
     }
     if (!newLeadData.email || !newLeadData.email.trim()) {
       error("Validation Error", "Email is required");
+      return;
+    }
+    if (!newLeadData.platform) {
+      error("Validation Error", "Investment platform is required");
       return;
     }
 
@@ -112,13 +164,14 @@ export function LeadManagement() {
         phone: "",
         company: "",
         source: "self",
+        platform: "",
         assetInterests: [],
         budget: "",
         notes: "",
         followUpDate: "",
         assignTo: "",
       });
-      setLeads(await leadsApi.getAll());
+      await refreshLeads();
       success(
         "Lead created successfully",
         `${newLeadData.name} has been added to your pipeline`,
@@ -133,8 +186,10 @@ export function LeadManagement() {
 
   const handleAddAsset = (assetId: string) => {
     if (!newLeadData.assetInterests.includes(assetId)) {
+      const asset = availableAssets.find((item) => item.id === assetId);
       setNewLeadData({
         ...newLeadData,
+        platform: asset?.platform || newLeadData.platform,
         assetInterests: [...newLeadData.assetInterests, assetId],
       });
     }
@@ -149,7 +204,7 @@ export function LeadManagement() {
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
     await leadsApi.update(leadId, { status: newStatus });
-    setLeads(await leadsApi.getAll());
+    await refreshLeads();
   };
 
   const handleAssignLead = async (leadId: string, agentId: string) => {
@@ -157,13 +212,29 @@ export function LeadManagement() {
     setIsAssignModalOpen(false);
     setSelectedLead(null);
     setSelectedAgent("");
-    setLeads(await leadsApi.getAll());
+    await refreshLeads();
   };
 
   const handleViewDetails = (leadId: string) => setSelectedLeadId(leadId);
   const handleBackToList = () => setSelectedLeadId(null);
 
   if (loading) return <div>Loading leads...</div>;
+  if (loadError) {
+    return (
+      <Card className="border-destructive/40">
+        <CardContent className="p-8 flex flex-col items-center text-center gap-4">
+          <AlertCircle className="w-8 h-8 text-destructive" />
+          <div>
+            <h2 className="font-semibold">Unable to load leads</h2>
+            <p className="text-sm text-muted-foreground">{loadError}</p>
+          </div>
+          <Button variant="outline" onClick={() => void loadLeadData()}>
+            Try again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
   if (selectedLeadId)
     return <LeadDetailView leadId={selectedLeadId} onBack={handleBackToList} />;
 
@@ -251,7 +322,11 @@ export function LeadManagement() {
     return visibleLeads;
   };
 
-  const filteredLeads = getFilteredLeads();
+  const roleFilteredLeads = getFilteredLeads();
+  const filteredLeads =
+    filterPlatform === "all"
+      ? roleFilteredLeads
+      : roleFilteredLeads.filter((lead) => lead.platform === filterPlatform);
 
   // Tab counts
   const personalCount = visibleLeads.filter(
@@ -281,7 +356,20 @@ export function LeadManagement() {
               : "Create and manage your sales leads"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Platform" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Platforms</SelectItem>
+              {INVESTMENT_PLATFORMS.map((platform) => (
+                <SelectItem key={platform} value={platform}>
+                  {platform}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -328,6 +416,36 @@ export function LeadManagement() {
                       }
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-platform">
+                    Investment Platform <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={newLeadData.platform}
+                    onValueChange={(platform) =>
+                      setNewLeadData({
+                        ...newLeadData,
+                        platform,
+                        assetInterests: newLeadData.assetInterests.filter(
+                          (assetId) =>
+                            availableAssets.find((asset) => asset.id === assetId)
+                              ?.platform === platform,
+                        ),
+                      })
+                    }
+                  >
+                    <SelectTrigger id="lead-platform">
+                      <SelectValue placeholder="Select Foundry or Harbor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INVESTMENT_PLATFORMS.map((platform) => (
+                        <SelectItem key={platform} value={platform}>
+                          {platform}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -399,7 +517,9 @@ export function LeadManagement() {
                       {availableAssets
                         .filter(
                           (asset) =>
-                            !newLeadData.assetInterests.includes(asset.id),
+                            !newLeadData.assetInterests.includes(asset.id) &&
+                            (!newLeadData.platform ||
+                              asset.platform === newLeadData.platform),
                         )
                         .map((asset) => (
                           <SelectItem key={asset.id} value={asset.id}>
@@ -602,6 +722,12 @@ export function LeadManagement() {
                     <Badge variant="outline">{lead.serialId || lead.id}</Badge>
                     <Badge className={statusColors[lead.status]}>
                       {statusLabels[lead.status]}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={platformBadgeClass(lead.platform)}
+                    >
+                      {platformLabel(lead.platform)}
                     </Badge>
                     <Badge
                       className={sourceColors[lead.source]}
